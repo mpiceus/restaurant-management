@@ -82,6 +82,10 @@ public class HoaDonService {
         return chiTietHoaDonDAO.findDetailsByHoaDonId(hoaDonId);
     }
 
+    public HoaDonDTO getHoaDonById(int hoaDonId) {
+        return hoaDonDAO.findById(hoaDonId);
+    }
+
     private void rollbackQuietly(Connection conn) {
         if (conn == null) {
             return;

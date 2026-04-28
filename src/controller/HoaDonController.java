@@ -24,4 +24,8 @@ public class HoaDonController {
     public List<Object[]> getDetails(int hoaDonId) {
         return hoaDonService.getHoaDonDetails(hoaDonId);
     }
+
+    public HoaDonDTO getById(int hoaDonId) {
+        return hoaDonService.getHoaDonById(hoaDonId);
+    }
 }

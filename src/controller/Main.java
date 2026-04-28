@@ -1,5 +1,6 @@
 package controller;
 
+import util.UITheme;
 import view.LoginFrame;
 
 import javax.swing.*;
@@ -11,7 +12,8 @@ public class Main {
         } catch (Exception ignored) {
         }
 
+        UITheme.apply();
+
         SwingUtilities.invokeLater(LoginFrame::new);
     }
 }
-

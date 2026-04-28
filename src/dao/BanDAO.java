@@ -27,6 +27,22 @@ public class BanDAO {
         return list;
     }
 
+    public Ban findById(int banId) {
+        String sql = "SELECT ban_id, ten_ban, trang_thai FROM Ban WHERE ban_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, banId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Ban(rs.getInt("ban_id"), rs.getString("ten_ban"), rs.getString("trang_thai"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public int insert(Ban ban) throws Exception {
         String sql = "INSERT INTO Ban(ten_ban, trang_thai) VALUES (?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -40,7 +56,7 @@ public class BanDAO {
                 }
             }
         }
-        throw new Exception("Không lấy được ban_id sau khi insert Ban.");
+        throw new Exception("KhÃ´ng láº¥y Ä‘Æ°á»£c ban_id sau khi insert Ban.");
     }
 
     public void update(Ban ban) throws Exception {

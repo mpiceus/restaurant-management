@@ -1,32 +1,29 @@
 package view.dialog;
 
 import controller.HoaDonController;
+import model.HoaDonDTO;
+import view.common.InvoicePaperPanel;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HoaDonDetailDialog extends JDialog {
     private final HoaDonController controller = new HoaDonController();
-    private final DefaultTableModel tableModel;
+    private final InvoicePaperPanel invoice = new InvoicePaperPanel();
 
     public HoaDonDetailDialog(Window parent, int hoaDonId) {
         super(parent, ModalityType.APPLICATION_MODAL);
-        setTitle("Chi tiết hóa đơn #" + hoaDonId);
-        setSize(700, 420);
+        setTitle("Chi tiet hoa don #" + hoaDonId);
+        setSize(720, 620);
         setLocationRelativeTo(parent);
+        setLayout(new BorderLayout());
 
-        tableModel = new DefaultTableModel(new Object[]{"Tên món", "Số lượng", "Đơn giá", "Thành tiền"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        JTable table = new JTable(tableModel);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        add(invoice, BorderLayout.CENTER);
 
-        JButton btnClose = new JButton("Đóng");
+        JButton btnClose = new JButton("Dong");
         btnClose.addActionListener(e -> dispose());
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottom.add(btnClose);
@@ -36,11 +33,20 @@ public class HoaDonDetailDialog extends JDialog {
     }
 
     private void load(int hoaDonId) {
+        HoaDonDTO h = controller.getById(hoaDonId);
         List<Object[]> details = controller.getDetails(hoaDonId);
-        tableModel.setRowCount(0);
+
+        List<InvoicePaperPanel.LineItem> items = new ArrayList<>();
         for (Object[] d : details) {
-            tableModel.addRow(d);
+            String tenMon = String.valueOf(d[0]);
+            int soLuong = ((Number) d[1]).intValue();
+            BigDecimal donGia = (BigDecimal) d[2];
+            items.add(new InvoicePaperPanel.LineItem(tenMon, soLuong, donGia));
         }
+
+        String tenBan = h == null ? "" : h.getTenBan();
+        String nv = h == null ? "" : h.getTenNhanVien();
+        invoice.setData(String.valueOf(hoaDonId), tenBan, nv, h == null ? null : h.getNgayTao(), items);
     }
 }
 

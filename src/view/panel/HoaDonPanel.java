@@ -30,6 +30,7 @@ public class HoaDonPanel extends JPanel {
     public HoaDonPanel(boolean adminMode) {
         this.adminMode = adminMode;
         setLayout(new BorderLayout(8, 8));
+        setBackground(util.UITheme.BEIGE);
 
         tableModel = new DefaultTableModel(new Object[]{
                 "ID", "Bàn", "Nhân viên", "Tổng tiền", "Ngày tạo", "Chi tiết"
@@ -40,6 +41,8 @@ public class HoaDonPanel extends JPanel {
             }
         };
         table = new JTable(tableModel);
+        table.setRowHeight(28);
+        table.getTableHeader().setReorderingAllowed(false);
 
         table.getColumn("Chi tiết").setCellRenderer(new TableButtonRenderer());
         table.getColumn("Chi tiết").setCellEditor(new TableButtonEditor("Xem", this::onViewDetailRow));
@@ -47,6 +50,7 @@ public class HoaDonPanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bottom.setBackground(util.UITheme.BEIGE);
         JButton btnRefresh = new JButton("Làm mới");
         btnRefresh.addActionListener(e -> loadData());
         bottom.add(btnRefresh);
@@ -82,4 +86,3 @@ public class HoaDonPanel extends JPanel {
         dialog.setVisible(true);
     }
 }
-
