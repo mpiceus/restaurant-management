@@ -44,14 +44,36 @@ public class ChiTietBanDAO {
     }
 
     public void insert(int banId, int monId, int soLuong, int userId) throws Exception {
-        String sql = "INSERT INTO ChiTietBan(ban_id, mon_id, so_luong, user_id) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, banId);
-            ps.setInt(2, monId);
-            ps.setInt(3, soLuong);
-            ps.setInt(4, userId);
-            ps.executeUpdate();
+        try (Connection conn = DBConnection.getConnection()) {
+            // Upsert (merge same mon into 1 row for ban+user)
+            String findSql = "SELECT chitietban_id, so_luong FROM ChiTietBan WHERE ban_id = ? AND mon_id = ? AND user_id = ?";
+            try (PreparedStatement find = conn.prepareStatement(findSql)) {
+                find.setInt(1, banId);
+                find.setInt(2, monId);
+                find.setInt(3, userId);
+                try (ResultSet rs = find.executeQuery()) {
+                    if (rs.next()) {
+                        int id = rs.getInt("chitietban_id");
+                        int current = rs.getInt("so_luong");
+                        String upSql = "UPDATE ChiTietBan SET so_luong = ?, thoi_gian = CURRENT_TIMESTAMP WHERE chitietban_id = ?";
+                        try (PreparedStatement up = conn.prepareStatement(upSql)) {
+                            up.setInt(1, current + soLuong);
+                            up.setInt(2, id);
+                            up.executeUpdate();
+                        }
+                        return;
+                    }
+                }
+            }
+
+            String insSql = "INSERT INTO ChiTietBan(ban_id, mon_id, so_luong, user_id) VALUES (?, ?, ?, ?)";
+            try (PreparedStatement ps = conn.prepareStatement(insSql)) {
+                ps.setInt(1, banId);
+                ps.setInt(2, monId);
+                ps.setInt(3, soLuong);
+                ps.setInt(4, userId);
+                ps.executeUpdate();
+            }
         }
     }
 

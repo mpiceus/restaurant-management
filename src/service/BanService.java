@@ -12,25 +12,29 @@ public class BanService {
         return banDAO.findAll();
     }
 
+    public Ban getById(int banId) {
+        return banDAO.findById(banId);
+    }
+
     public void create(String tenBan, String trangThai) throws ServiceException {
         if (tenBan == null || tenBan.trim().isEmpty()) {
-            throw new ServiceException("Tên bàn không được để trống.");
+            throw new ServiceException("TÃªn bÃ n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
         }
         try {
             banDAO.insert(new Ban(0, tenBan.trim(), trangThai));
         } catch (Exception e) {
-            throw new ServiceException("Không thể thêm bàn.", e);
+            throw new ServiceException("KhÃ´ng thá»ƒ thÃªm bÃ n.", e);
         }
     }
 
     public void update(int banId, String tenBan, String trangThai) throws ServiceException {
         if (tenBan == null || tenBan.trim().isEmpty()) {
-            throw new ServiceException("Tên bàn không được để trống.");
+            throw new ServiceException("TÃªn bÃ n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
         }
         try {
             banDAO.update(new Ban(banId, tenBan.trim(), trangThai));
         } catch (Exception e) {
-            throw new ServiceException("Không thể cập nhật bàn.", e);
+            throw new ServiceException("KhÃ´ng thá»ƒ cáº­p nháº­t bÃ n.", e);
         }
     }
 
@@ -38,7 +42,7 @@ public class BanService {
         try {
             banDAO.updateTrangThai(banId, trangThai);
         } catch (Exception e) {
-            throw new ServiceException("Không thể cập nhật trạng thái bàn.", e);
+            throw new ServiceException("KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i bÃ n.", e);
         }
     }
 
@@ -46,7 +50,7 @@ public class BanService {
         try {
             banDAO.delete(banId);
         } catch (Exception e) {
-            throw new ServiceException("Không thể xóa bàn (có thể đang được tham chiếu bởi hóa đơn).", e);
+            throw new ServiceException("KhÃ´ng thá»ƒ xÃ³a bÃ n (cÃ³ thá»ƒ Ä‘ang Ä‘Æ°á»£c tham chiáº¿u bá»Ÿi hÃ³a Ä‘Æ¡n).", e);
         }
     }
 }

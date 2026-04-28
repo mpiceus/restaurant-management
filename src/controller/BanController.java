@@ -13,6 +13,10 @@ public class BanController {
         return banService.getAll();
     }
 
+    public Ban getById(int banId) {
+        return banService.getById(banId);
+    }
+
     public void create(String tenBan, String trangThai) throws ServiceException {
         banService.create(tenBan, trangThai);
     }

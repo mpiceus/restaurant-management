@@ -100,4 +100,35 @@ public class HoaDonDAO {
         }
         return list;
     }
+
+    public HoaDonDTO findById(int hoaDonId) {
+        String sql =
+                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao " +
+                        "FROM HoaDon h " +
+                        "JOIN Ban b ON h.ban_id = b.ban_id " +
+                        "JOIN Users u ON h.user_id = u.user_id " +
+                        "WHERE h.hoadon_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, hoaDonId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Timestamp t = rs.getTimestamp("ngay_tao");
+                    return new HoaDonDTO(
+                            rs.getInt("hoadon_id"),
+                            rs.getInt("ban_id"),
+                            rs.getString("ten_ban"),
+                            rs.getInt("user_id"),
+                            rs.getString("ten_nv"),
+                            rs.getBigDecimal("tong_tien"),
+                            t == null ? null : t.toLocalDateTime()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
