@@ -11,7 +11,7 @@ import java.sql.DriverManager;
 public class DBConnection {
 
     private static final String URL =
-            "jdbc:sqlserver://192.168.1.10:1433;"
+            "jdbc:sqlserver://192.168.2.120;"
                     + "databaseName=QuanLyNhaHang;"
                     + "encrypt=true;"
                     + "trustServerCertificate=true;"

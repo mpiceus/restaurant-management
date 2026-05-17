@@ -1,14 +1,13 @@
 package view;
 
 import controller.LoginController;
-import util.UITheme;
-import view.common.RoundedPasswordField;
-import view.common.RoundedTextField;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.*;
+import util.UITheme;
+import view.common.RoundedPasswordField;
+import view.common.RoundedTextField;
 
 public class LoginFrame extends JFrame {
     private final RoundedTextField txtUsername = new RoundedTextField("Username");
@@ -16,7 +15,7 @@ public class LoginFrame extends JFrame {
     private final LoginController controller = new LoginController();
 
     public LoginFrame() {
-        setTitle("Dang nhap - Quan ly nha hang");
+        setTitle("Đăng nhập - Quản lý nhà hàng");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(520, 520));
         setLocationRelativeTo(null);
@@ -65,11 +64,11 @@ public class LoginFrame extends JFrame {
         actions.setOpaque(false);
         actions.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
 
-        JButton btnExit = new JButton("Thoat");
-        JButton btnLogin = new JButton("Dang nhap");
+        JButton btnExit = new JButton("Thoát");
+        JButton btnLogin = new JButton("Đăng nhập");
 
         styleSecondary(btnExit);
-        stylePrimary(btnLogin);
+        styleSecondary(btnLogin);
 
         btnLogin.addActionListener(e -> doLogin());
         btnExit.addActionListener(e -> System.exit(0));

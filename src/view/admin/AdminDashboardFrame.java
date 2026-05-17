@@ -1,12 +1,11 @@
 package view.admin;
 
+import java.awt.*;
+import javax.swing.*;
 import util.Session;
 import util.UITheme;
 import view.LoginFrame;
 import view.panel.*;
-
-import javax.swing.*;
-import java.awt.*;
 
 public class AdminDashboardFrame extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
@@ -67,17 +66,17 @@ public class AdminDashboardFrame extends JFrame {
         top.add(user);
         top.add(Box.createVerticalStrut(16));
 
-        top.add(navButton("Mon an", "MONAN"));
+        top.add(navButton("Món ăn", "MONAN"));
         top.add(Box.createVerticalStrut(6));
-        top.add(navButton("Loai mon", "LOAI"));
+        top.add(navButton("Loại món", "LOAI"));
         top.add(Box.createVerticalStrut(6));
-        top.add(navButton("Bang gia", "BANGGIA"));
+        top.add(navButton("Bảng giá", "BANGGIA"));
         top.add(Box.createVerticalStrut(6));
-        top.add(navButton("Ban", "BAN"));
+        top.add(navButton("Bàn", "BAN"));
         top.add(Box.createVerticalStrut(6));
-        top.add(navButton("Hoa don", "HOADON"));
+        top.add(navButton("Hóa đơn", "HOADON"));
         top.add(Box.createVerticalStrut(6));
-        top.add(navButton("Nhan vien", "NHANVIEN"));
+        top.add(navButton("Nhân viên", "NHANVIEN"));
 
         side.add(top, BorderLayout.NORTH);
 
@@ -86,7 +85,7 @@ public class AdminDashboardFrame extends JFrame {
         bottom.setBorder(BorderFactory.createEmptyBorder(8, 12, 12, 12));
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
 
-        JButton logout = new JButton("Dang xuat");
+        JButton logout = new JButton("Đăng xuất");
         logout.setAlignmentX(Component.LEFT_ALIGNMENT);
         logout.addActionListener(e -> {
             Session.clear();
