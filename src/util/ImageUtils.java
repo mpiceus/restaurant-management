@@ -1,10 +1,10 @@
 package util;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public final class ImageUtils {
     private ImageUtils() {
@@ -44,7 +44,14 @@ public final class ImageUtils {
         Graphics2D g = scaled.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        g.drawImage(src, 0, 0, scaledW, scaledH, null);
+        g.drawImage(
+                src,
+                0,
+                0,
+                scaledW,
+                scaledH,
+                null
+        );
         g.dispose();
 
         int x = Math.max(0, (scaledW - size) / 2);
