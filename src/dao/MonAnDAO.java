@@ -21,7 +21,7 @@ public class MonAnDAO {
 
     public List<MonAnWithPriceDTO> findAllWithLatestPrice() {
         String sql =
-                "SELECT m.mon_id, m.ten_mon, m.loai_id, l.ten_loai, m.trang_thai, bg.gia " +
+                "SELECT m.mon_id, m.ten_mon, m.loai_id, l.ten_loai, m.trang_thai, m.hinh_anh, bg.gia " +
                         "FROM MonAn m " +
                         "JOIN LoaiMonAn l ON m.loai_id = l.loai_id " +
                         "OUTER APPLY ( " +
@@ -48,7 +48,7 @@ public class MonAnDAO {
 
     public List<MonAnWithPriceDTO> findByLoaiIdWithLatestPrice(int loaiId) {
         String sql =
-                "SELECT m.mon_id, m.ten_mon, m.loai_id, l.ten_loai, m.trang_thai, bg.gia " +
+                "SELECT m.mon_id, m.ten_mon, m.loai_id, l.ten_loai, m.trang_thai, m.hinh_anh bg.gia " +
                         "FROM MonAn m " +
                         "JOIN LoaiMonAn l ON m.loai_id = l.loai_id " +
                         "OUTER APPLY ( " +
@@ -83,7 +83,7 @@ public class MonAnDAO {
      */
     public List<MonAnWithPriceDTO> searchWithLatestPrice(String keyword, Integer loaiId, Integer monId) {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT m.mon_id, m.ten_mon, m.loai_id, l.ten_loai, m.trang_thai, bg.gia ")
+        sql.append("SELECT m.mon_id, m.ten_mon, m.loai_id, l.ten_loai, m.trang_thai, m.hinh_anh, bg.gia ")
                 .append("FROM MonAn m ")
                 .append("JOIN LoaiMonAn l ON m.loai_id = l.loai_id ")
                 .append("OUTER APPLY ( ")
@@ -129,7 +129,7 @@ public class MonAnDAO {
     }
 
     public MonAn findById(int monId) {
-        String sql = "SELECT mon_id, ten_mon, loai_id, trang_thai FROM MonAn WHERE mon_id = ?";
+        String sql = "SELECT mon_id, ten_mon, loai_id, trang_thai, hinh_anh FROM MonAn WHERE mon_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, monId);
@@ -139,7 +139,8 @@ public class MonAnDAO {
                             rs.getInt("mon_id"),
                             rs.getString("ten_mon"),
                             rs.getInt("loai_id"),
-                            rs.getString("trang_thai")
+                            rs.getString("trang_thai"),
+                            rs.getString("hinh_anh")
                     );
                 }
             }
@@ -157,8 +158,8 @@ public class MonAnDAO {
             FROM MonAn
             """;
     String sqlInsert = """
-            INSERT INTO MonAn(ten_mon, loai_id, trang_thai)
-            VALUES (?, ?, ?)
+            INSERT INTO MonAn(ten_mon, loai_id, trang_thai, hinh_anh)
+            VALUES (?, ?, ?, ?)
             """;
     try (Connection conn = DBConnection.getConnection()) {
         // check trùng
@@ -189,6 +190,7 @@ public class MonAnDAO {
                     monAn.getTrangThai() == null
                             ? "CON"
                             : monAn.getTrangThai());
+            ps.setString(4, monAn.getHinhAnh());
 
             ps.executeUpdate();
 
@@ -215,7 +217,7 @@ public class MonAnDAO {
 
     String sqlUpdate = """
             UPDATE MonAn
-            SET ten_mon = ?, loai_id = ?, trang_thai = ?
+            SET ten_mon = ?, loai_id = ?, trang_thai = ?, hinh_anh = ?
             WHERE mon_id = ?
             """;
 
@@ -257,12 +259,35 @@ public class MonAnDAO {
                             ? "CON"
                             : monAn.getTrangThai());
 
-            ps.setInt(4, monAn.getMonId());
+            ps.setString(4, monAn.getHinhAnh());
+
+            ps.setInt(5, monAn.getMonId());
 
             ps.executeUpdate();
         }
     }
 }
+
+    public void updateImage(int monId, String imagePath) throws Exception {
+
+        String sql = """
+            UPDATE MonAn
+            SET hinh_anh = ?
+            WHERE mon_id = ?
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setString(1, imagePath);
+
+            ps.setInt(2, monId);
+
+            ps.executeUpdate();
+        }
+    }
 
     public void delete(int monId) throws Exception {
         // Lưu ý: cần xóa bảng giá trước nếu có FK.
@@ -282,6 +307,7 @@ public class MonAnDAO {
                 rs.getInt("loai_id"),
                 rs.getString("ten_loai"),
                 rs.getString("trang_thai"),
+                rs.getString("hinh_anh"),
                 gia == null ? BigDecimal.ZERO : gia
         );
     }

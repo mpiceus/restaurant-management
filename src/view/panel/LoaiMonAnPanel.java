@@ -1,6 +1,12 @@
 package view.panel;
 
 import controller.LoaiMonAnController;
+import java.awt.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.*;
 import model.LoaiMonAn;
 import service.ServiceException;
 import util.ImageUtils;
@@ -9,18 +15,11 @@ import view.common.WrapLayout;
 import view.dialog.LoaiMonAnFormDialog;
 import view.dialog.MonAnByLoaiDialog;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class LoaiMonAnPanel extends JPanel {
     private final boolean editable; // ADMIN: true, STAFF: false
     private final LoaiMonAnController controller = new LoaiMonAnController();
 
-    private final JPanel grid = new JPanel(new WrapLayout(FlowLayout.LEFT, 12, 12));
+    private final JPanel grid = new JPanel(new WrapLayout(FlowLayout.CENTER, 12, 12));
     private Integer selectedLoaiId = null;
     private final Map<Integer, LoaiMonAn> loaiById = new HashMap<>();
 
@@ -111,7 +110,8 @@ public class LoaiMonAnPanel extends JPanel {
 
         JLabel hint = new JLabel("Click de xem mon");
         hint.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
-        hint.setAlignmentX(Component.LEFT_ALIGNMENT);
+        hint.setAlignmentX(Component.CENTER_ALIGNMENT);
+        hint.setHorizontalAlignment(SwingConstants.CENTER);
 
         card.add(title);
         card.add(img);

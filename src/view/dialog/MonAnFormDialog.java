@@ -1,12 +1,12 @@
 package view.dialog;
 
 import controller.LoaiMonAnController;
-import model.LoaiMonAn;
-
-import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.List;
+import javax.swing.*;
+import model.LoaiMonAn;
 
 public class MonAnFormDialog extends JDialog {
     public static class InitialData {
@@ -14,12 +14,16 @@ public class MonAnFormDialog extends JDialog {
         public final String tenMon;
         public final int loaiId;
         public final String trangThai;
+        public final BigDecimal giaHienTai;
+        public final String hinhAnh;
 
-        public InitialData(int monId, String tenMon, int loaiId, String trangThai) {
+        public InitialData(int monId, String tenMon, int loaiId, String trangThai, BigDecimal giaHienTai, String hinhAnh) {
             this.monId = monId;
             this.tenMon = tenMon;
             this.loaiId = loaiId;
             this.trangThai = trangThai;
+            this.giaHienTai = giaHienTai;
+            this.hinhAnh = hinhAnh;
         }
     }
 
@@ -29,6 +33,7 @@ public class MonAnFormDialog extends JDialog {
     private final JComboBox<LoaiMonAn> cbLoai = new JComboBox<>();
     private final JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"CON", "HET"});
     private final JTextField txtGia = new JTextField();
+    private String oldImagePath;
 
     public MonAnFormDialog(Window parent, LoaiMonAnController loaiController, InitialData initial) {
         super(parent, ModalityType.APPLICATION_MODAL);
@@ -37,12 +42,24 @@ public class MonAnFormDialog extends JDialog {
         setLocationRelativeTo(parent);
 
         initLoai(loaiController);
+        btnChooseImage.addActionListener(e -> chooseImage());
 
         if (initial != null) {
             txtTenMon.setText(initial.tenMon);
             cbTrangThai.setSelectedItem(initial.trangThai == null ? "CON" : initial.trangThai);
             selectLoai(initial.loaiId);
             txtGia.setText(""); // sửa: giá mới là optional, để trống = không thêm dòng BangGia mới
+            oldImagePath = initial.hinhAnh;
+            lblImage.setText(
+                    initial.hinhAnh == null
+                            ? "Chua chon anh"
+                            : initial.hinhAnh
+            );
+            if (initial.giaHienTai != null) {
+                txtGia.setText(
+                        initial.giaHienTai.toPlainString()
+                );
+            }
         } else {
             cbTrangThai.setSelectedItem("CON");
         }
@@ -82,8 +99,12 @@ public class MonAnFormDialog extends JDialog {
         }
     }
 
+    public String getOldImagePath() {
+        return oldImagePath;
+    }
+
     private void buildUI(boolean isEdit) {
-        JPanel form = new JPanel(new GridLayout(5, 2, 8, 8));
+        JPanel form = new JPanel(new GridLayout(6, 2, 8, 8));
         form.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         form.add(new JLabel("Tên món:"));
@@ -97,6 +118,12 @@ public class MonAnFormDialog extends JDialog {
 
         form.add(new JLabel(isEdit ? "Giá mới (tùy chọn):" : "Giá:"));
         form.add(txtGia);
+
+        form.add(new JLabel("Ảnh:"));
+        JPanel imagePanel = new JPanel(new BorderLayout(5, 5));
+        imagePanel.add(btnChooseImage, BorderLayout.WEST);
+        imagePanel.add(lblImage, BorderLayout.CENTER);
+        form.add(imagePanel);
 
         JButton btnCancel = new JButton("Hủy");
         JButton btnSave = new JButton("Lưu");
@@ -170,6 +197,30 @@ public class MonAnFormDialog extends JDialog {
             return null;
         }
         return new BigDecimal(s);
+    }
+
+    private File hinhAnh;
+
+    private final JButton btnChooseImage = new JButton("Chon anh");
+
+    private final JLabel lblImage = new JLabel("Chua chon anh");
+
+    private void chooseImage() {
+
+        JFileChooser chooser = new JFileChooser();
+
+        int result = chooser.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+
+            hinhAnh = chooser.getSelectedFile();
+
+            lblImage.setText(hinhAnh.getName());
+        }
+    }
+
+    public File getHinhAnh() {
+        return hinhAnh;
     }
 }
 

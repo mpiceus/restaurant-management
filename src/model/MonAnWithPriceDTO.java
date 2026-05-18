@@ -12,13 +12,15 @@ public class MonAnWithPriceDTO {
     private String tenLoai;
     private String trangThai;
     private BigDecimal gia;
+    private String hinhAnh;
 
-    public MonAnWithPriceDTO(int monId, String tenMon, int loaiId, String tenLoai, String trangThai, BigDecimal gia) {
+    public MonAnWithPriceDTO(int monId, String tenMon, int loaiId, String tenLoai, String trangThai, String hinhAnh, BigDecimal gia) {
         this.monId = monId;
         this.tenMon = tenMon;
         this.loaiId = loaiId;
         this.tenLoai = tenLoai;
         this.trangThai = trangThai;
+        this.hinhAnh = hinhAnh;
         this.gia = gia;
     }
 
@@ -40,6 +42,14 @@ public class MonAnWithPriceDTO {
 
     public String getTrangThai() {
         return trangThai;
+    }
+
+    public String getHinhAnh() {
+        return hinhAnh;
+    }
+
+    public void setHinhAnh(String hinhAnh) {
+        this.hinhAnh = hinhAnh;
     }
 
     public BigDecimal getGia() {

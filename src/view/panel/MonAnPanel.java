@@ -2,6 +2,13 @@ package view.panel;
 
 import controller.LoaiMonAnController;
 import controller.MonAnController;
+import java.awt.*;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.*;
 import model.LoaiMonAn;
 import model.MonAnWithPriceDTO;
 import service.ServiceException;
@@ -10,14 +17,6 @@ import util.MoneyUtils;
 import util.UITheme;
 import view.common.WrapLayout;
 import view.dialog.MonAnFormDialog;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class MonAnPanel extends JPanel {
     private final boolean editable; // ADMIN: true, STAFF: false
@@ -29,7 +28,7 @@ public class MonAnPanel extends JPanel {
     private final JTextField txtMonId = new JTextField();
     private final JComboBox<LoaiMonAn> cbLoai = new JComboBox<>();
 
-    private final JPanel grid = new JPanel(new WrapLayout(FlowLayout.LEFT, 12, 12));
+    private final JPanel grid = new JPanel(new WrapLayout(FlowLayout.CENTER, 12, 12));
     private Integer selectedMonId = null;
     private final Map<Integer, MonAnWithPriceDTO> monById = new HashMap<>();
 
@@ -176,16 +175,23 @@ public class MonAnPanel extends JPanel {
         JLabel title = new JLabel(String.valueOf(m.getTenMon()).toUpperCase());
         title.setFont(title.getFont().deriveFont(Font.BOLD, 13.5f));
         title.setBorder(BorderFactory.createEmptyBorder(8, 10, 4, 10));
-        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
 
         JPanel img = new JPanel(new BorderLayout());
         img.setPreferredSize(new Dimension(160, 160));
         img.setMaximumSize(new Dimension(160, 160));
-        img.setAlignmentX(Component.LEFT_ALIGNMENT);
+        img.setAlignmentX(Component.CENTER_ALIGNMENT);
         img.setBackground(isHet ? new Color(0xDDDDDD) : Color.WHITE);
 
         JLabel imgLabel = new JLabel("", SwingConstants.CENTER);
-        ImageIcon icon = tryLoadMonImage(m.getMonId(), 160);
+        imgLabel.setPreferredSize(new Dimension(160, 160));
+        imgLabel.setMinimumSize(new Dimension(160, 160));
+        imgLabel.setMaximumSize(new Dimension(160, 160));
+        imgLabel.setOpaque(true);
+        imgLabel.setBackground(Color.WHITE);
+
+        ImageIcon icon = tryLoadMonImage(m.getHinhAnh(), 160);
         if (icon != null) {
             imgLabel.setIcon(icon);
         } else {
@@ -195,18 +201,23 @@ public class MonAnPanel extends JPanel {
             imgLabel.setForeground(Color.GRAY);
         }
         img.add(imgLabel, BorderLayout.CENTER);
-        img.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        img.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        img.setMaximumSize(new Dimension(180, 160));
 
-        JLabel meta1 = new JLabel("ID: " + m.getMonId() + " | LOAI: " + (m.getTenLoai() == null ? "" : m.getTenLoai()));
-        JLabel meta2 = new JLabel("GIA: " + MoneyUtils.formatVnd(m.getGia()) + " VND");
-        JLabel meta3 = new JLabel("TRANG THAI: " + (m.getTrangThai() == null ? "" : m.getTrangThai()));
+        JLabel meta1 = new JLabel("ID: " + m.getMonId() + " | Loại: " + (m.getTenLoai() == null ? "" : m.getTenLoai()));
+        JLabel meta2 = new JLabel("Giá: " + MoneyUtils.formatVnd(m.getGia()) + " VND");
+        JLabel meta3 = new JLabel("Trạng thái: " + (m.getTrangThai() == null ? "" : m.getTrangThai()));
 
         meta1.setBorder(BorderFactory.createEmptyBorder(8, 10, 0, 10));
         meta2.setBorder(BorderFactory.createEmptyBorder(2, 10, 0, 10));
         meta3.setBorder(BorderFactory.createEmptyBorder(2, 10, 10, 10));
-        meta1.setAlignmentX(Component.LEFT_ALIGNMENT);
-        meta2.setAlignmentX(Component.LEFT_ALIGNMENT);
-        meta3.setAlignmentX(Component.LEFT_ALIGNMENT);
+        meta1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        meta2.setAlignmentX(Component.CENTER_ALIGNMENT);
+        meta3.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        meta1.setHorizontalAlignment(SwingConstants.CENTER);
+        meta2.setHorizontalAlignment(SwingConstants.CENTER);
+        meta3.setHorizontalAlignment(SwingConstants.CENTER);
 
         if (isHet) {
             title.setForeground(Color.GRAY);
@@ -267,16 +278,18 @@ public class MonAnPanel extends JPanel {
         }
     }
 
-    private ImageIcon tryLoadMonImage(int monId, int size) {
-        String base = "assets/monan/" + monId;
-        String[] exts = new String[]{".jpg", ".jpeg", ".png"};
-        for (String ext : exts) {
-            File f = new File(base + ext);
-            if (f.exists()) {
-                return ImageUtils.loadSquareIcon(f.getPath(), size);
-            }
+    private ImageIcon tryLoadMonImage(String imagePath, int size) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
         }
-        return null;
+
+        File f = new File(imagePath);
+
+        if (!f.exists()) {
+            return null;
+        }
+
+        return ImageUtils.loadSquareIcon(imagePath, size);
     }
 
     private void onAdd() {
@@ -286,7 +299,7 @@ public class MonAnPanel extends JPanel {
             return;
         }
         try {
-            monAnController.create(dialog.getTenMon(), dialog.getLoaiId(), dialog.getTrangThai(), dialog.getGia());
+            monAnController.create(dialog.getTenMon(), dialog.getLoaiId(), dialog.getTrangThai(), dialog.getGia(), dialog.getHinhAnh());
             loadData(null, null, null);
         } catch (ServiceException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
@@ -295,19 +308,20 @@ public class MonAnPanel extends JPanel {
 
     private void onEdit() {
         if (selectedMonId == null) {
-            JOptionPane.showMessageDialog(this, "Vui long chon 1 mon de sua.");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 món để sửa.");
             return;
         }
         MonAnWithPriceDTO m = monById.get(selectedMonId);
         if (m == null) {
-            JOptionPane.showMessageDialog(this, "Khong tim thay mon.");
+            JOptionPane.showMessageDialog(this, "Không tìm thấy món.");
             return;
         }
 
         MonAnFormDialog dialog = new MonAnFormDialog(
                 SwingUtilities.getWindowAncestor(this),
                 loaiController,
-                new MonAnFormDialog.InitialData(m.getMonId(), m.getTenMon(), m.getLoaiId(), m.getTrangThai())
+                new MonAnFormDialog.InitialData(
+                    m.getMonId(), m.getTenMon(), m.getLoaiId(), m.getTrangThai(), m.getGia(),m.getHinhAnh())
         );
         dialog.setVisible(true);
         if (!dialog.isSaved()) {
@@ -315,7 +329,14 @@ public class MonAnPanel extends JPanel {
         }
         try {
             BigDecimal giaMoi = dialog.getGiaOptional();
-            monAnController.update(m.getMonId(), dialog.getTenMon(), dialog.getLoaiId(), dialog.getTrangThai(), giaMoi);
+            monAnController.update(
+                    m.getMonId(),
+                    dialog.getTenMon(),
+                    dialog.getLoaiId(),
+                    dialog.getTrangThai(),
+                    giaMoi,
+                    dialog.getHinhAnh()
+            );
             loadData(null, null, null);
         } catch (ServiceException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
@@ -324,11 +345,11 @@ public class MonAnPanel extends JPanel {
 
     private void onDelete() {
         if (selectedMonId == null) {
-            JOptionPane.showMessageDialog(this, "Vui long chon 1 mon de xoa.");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 món để xóa.");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Xoa mon id=" + selectedMonId + " ?", "Xac nhan",
+        int confirm = JOptionPane.showConfirmDialog(this, "Xóa món id=" + selectedMonId + " ?", "Xác nhận",
                 JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) {
             return;
@@ -338,7 +359,7 @@ public class MonAnPanel extends JPanel {
             monAnController.delete(selectedMonId);
             loadData(null, null, null);
         } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

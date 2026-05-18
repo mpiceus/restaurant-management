@@ -1,15 +1,14 @@
 package view.panel;
 
 import controller.UserController;
+import java.awt.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import model.User;
 import service.ServiceException;
 import util.Role;
 import view.dialog.UserFormDialog;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.util.List;
 
 /**
  * Quản lý nhân viên (Users) - chỉ ADMIN.
@@ -33,9 +32,9 @@ public class UserPanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = new JButton("Tải lại");
         JButton btnAdd = new JButton("Thêm");
-        JButton btnEdit = new JButton("Sửa");
+        JButton btnEdit = new JButton("Chỉnh sửa");
         JButton btnDelete = new JButton("Xóa");
 
         btnRefresh.addActionListener(e -> loadData());

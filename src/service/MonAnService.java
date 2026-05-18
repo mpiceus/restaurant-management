@@ -2,11 +2,13 @@ package service;
 
 import dao.BangGiaDAO;
 import dao.MonAnDAO;
+import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import model.MonAn;
 import model.MonAnWithPriceDTO;
+import util.ImageStorageUtil;
 
 public class MonAnService {
     private final MonAnDAO monAnDAO = new MonAnDAO();
@@ -27,59 +29,178 @@ public class MonAnService {
     /**
      * Thêm món + thêm giá (BangGia) theo ngày hiện tại.
      */
-    public void create(String tenMon, int loaiId, String trangThai, BigDecimal gia) throws ServiceException {
+    public void create(
+        String tenMon,
+        int loaiId,
+        String trangThai,
+        BigDecimal gia,
+        File hinhAnh
+    ) throws ServiceException {
+
         if (tenMon == null || tenMon.trim().isEmpty()) {
             throw new ServiceException("Tên món không được để trống.");
         }
+
         if (gia == null || gia.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ServiceException("Giá phải > 0.");
         }
 
         try {
-            MonAn mon = new MonAn();
-            mon.setTenMon(tenMon.trim());
-            mon.setLoaiId(loaiId);
-            mon.setTrangThai(trangThai == null || trangThai.trim().isEmpty() ? "CON" : trangThai.trim());
 
+            // tạo object món
+            MonAn mon = new MonAn();
+
+            mon.setTenMon(tenMon.trim());
+
+            mon.setLoaiId(loaiId);
+
+            mon.setTrangThai(
+                    trangThai == null || trangThai.trim().isEmpty()
+                            ? "CON"
+                            : trangThai.trim()
+            );
+
+            // insert món trước
             int monId = monAnDAO.insert(mon);
-            bangGiaDAO.insert(new model.BangGia(0, monId, gia, LocalDate.now()));
+
+            // insert bảng giá
+            bangGiaDAO.insert(
+                    new model.BangGia(
+                            0,
+                            monId,
+                            gia,
+                            LocalDate.now()
+                    )
+            );
+
+            // lưu ảnh vào folder
+            String imagePath =
+                    ImageStorageUtil.saveMonAnImage(
+                            hinhAnh,
+                            monId
+                    );
+
+            // update path vào DB
+            monAnDAO.updateImage(
+                    monId,
+                    imagePath
+            );
+
         } catch (Exception e) {
-            if (e.getMessage().contains("đã tồn tại")) {
+
+            if (e.getMessage() != null
+                    && e.getMessage().contains("đã tồn tại")) {
+
                 throw new ServiceException(e.getMessage());
             }
-            throw new ServiceException("Không thể thêm món ăn.", e);
+
+            throw new ServiceException(
+                    "Không thể thêm món ăn.",
+                    e
+            );
         }
     }
 
     /**
      * Cập nhật thông tin món. Nếu muốn thay giá, insert thêm dòng BangGia mới.
      */
-    public void update(int monId, String tenMon, int loaiId, String trangThai, BigDecimal giaMoiOrNull)
-            throws ServiceException {
+    public void update(
+        int monId,
+        String tenMon,
+        int loaiId,
+        String trangThai,
+        BigDecimal giaMoiOrNull,
+        File hinhAnh
+    ) throws ServiceException {
+
         if (tenMon == null || tenMon.trim().isEmpty()) {
             throw new ServiceException("Tên món không được để trống.");
         }
+
         try {
+
             MonAn mon = new MonAn();
+
             mon.setMonId(monId);
+
             mon.setTenMon(tenMon.trim());
+
             mon.setLoaiId(loaiId);
-            mon.setTrangThai(trangThai == null || trangThai.trim().isEmpty() ? "CON" : trangThai.trim());
+
+            mon.setTrangThai(
+                    trangThai == null || trangThai.trim().isEmpty()
+                            ? "CON"
+                            : trangThai.trim()
+            );
+
+            // nếu user chọn ảnh mới
+            if (hinhAnh != null) {
+
+                String imagePath =
+                        ImageStorageUtil.saveMonAnImage(
+                                hinhAnh,
+                                monId
+                        );
+
+                mon.setHinhAnh(imagePath);
+
+            } else {
+
+                // giữ ảnh cũ
+                MonAn oldMon =
+                        monAnDAO.findById(monId);
+
+                if (oldMon != null) {
+                    mon.setHinhAnh(oldMon.getHinhAnh());
+                }
+            }
+
             monAnDAO.update(mon);
 
+            // thêm bảng giá mới nếu có
             if (giaMoiOrNull != null) {
+
                 if (giaMoiOrNull.compareTo(BigDecimal.ZERO) <= 0) {
                     throw new ServiceException("Giá phải > 0.");
                 }
-                bangGiaDAO.insert(new model.BangGia(0, monId, giaMoiOrNull, LocalDate.now()));
+
+                // lấy giá hiện tại
+                BigDecimal giaCu =
+                        bangGiaDAO.getLatestPrice(monId);
+
+                // chỉ insert nếu giá khác
+                if (giaCu == null
+                        || giaCu.compareTo(giaMoiOrNull) != 0) {
+
+                    bangGiaDAO.insert(
+                            new model.BangGia(
+                                    0,
+                                    monId,
+                                    giaMoiOrNull,
+                                    LocalDate.now()
+                            )
+                    );
+                }
             }
+
         } catch (ServiceException e) {
+
             throw e;
+
         } catch (Exception e) {
-            if (e.getMessage().contains("đã tồn tại")) {
+
+            if (e.getMessage() != null
+                    && e.getMessage().contains("đã tồn tại")) {
+
                 throw new ServiceException(e.getMessage());
             }
-            throw new ServiceException("Không thể cập nhật món ăn.", e);
+
+            e.printStackTrace();
+
+            throw new ServiceException(
+                    "Không thể cập nhật món ăn: " + e.getMessage(),
+                    e
+            );
         }
     }
 
