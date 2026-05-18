@@ -1,9 +1,5 @@
 package dao;
 
-import model.MonAn;
-import model.MonAnWithPriceDTO;
-import util.DBConnection;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,6 +7,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import model.MonAn;
+import model.MonAnWithPriceDTO;
+import util.DBConnection;
+import util.StringUtils;
 
 /**
  * DAO cho bảng MonAn.
@@ -150,13 +150,46 @@ public class MonAnDAO {
     }
 
     public int insert(MonAn monAn) throws Exception {
-        String sql = "INSERT INTO MonAn(ten_mon, loai_id, trang_thai) VALUES (?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setString(1, monAn.getTenMon());
+    String normalizedTenMon = StringUtils.normalizeVietnamese(monAn.getTenMon());
+    String sqlCheck = """
+            SELECT ten_mon
+            FROM MonAn
+            """;
+    String sqlInsert = """
+            INSERT INTO MonAn(ten_mon, loai_id, trang_thai)
+            VALUES (?, ?, ?)
+            """;
+    try (Connection conn = DBConnection.getConnection()) {
+        // check trùng
+        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheck);
+             ResultSet rs = psCheck.executeQuery()) {
+            while (rs.next()) {
+                String tenTrongDB =
+                        StringUtils.normalizeVietnamese(
+                                rs.getString("ten_mon"));
+                if (tenTrongDB.equals(normalizedTenMon)) {
+                    throw new Exception("Tên món đã tồn tại.");
+                }
+            }
+        }
+        // insert
+        try (PreparedStatement ps = conn.prepareStatement(
+                sqlInsert,
+                Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1,
+                    monAn.getTenMon()
+                            .trim()
+                            .replaceAll("\\s+", " "));
+
             ps.setInt(2, monAn.getLoaiId());
-            ps.setString(3, monAn.getTrangThai() == null ? "CON" : monAn.getTrangThai());
+
+            ps.setString(3,
+                    monAn.getTrangThai() == null
+                            ? "CON"
+                            : monAn.getTrangThai());
+
             ps.executeUpdate();
 
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -165,20 +198,71 @@ public class MonAnDAO {
                 }
             }
         }
-        throw new Exception("Không lấy được mon_id sau khi insert MonAn.");
     }
 
+    throw new Exception("Không lấy được mon_id.");
+}
+
     public void update(MonAn monAn) throws Exception {
-        String sql = "UPDATE MonAn SET ten_mon = ?, loai_id = ?, trang_thai = ? WHERE mon_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, monAn.getTenMon());
+
+    String normalizedTenMon =
+            StringUtils.normalizeVietnamese(monAn.getTenMon());
+
+    String sqlCheck = """
+            SELECT mon_id, ten_mon
+            FROM MonAn
+            """;
+
+    String sqlUpdate = """
+            UPDATE MonAn
+            SET ten_mon = ?, loai_id = ?, trang_thai = ?
+            WHERE mon_id = ?
+            """;
+
+    try (Connection conn = DBConnection.getConnection()) {
+
+        // kiểm tra trùng tên
+        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheck);
+             ResultSet rs = psCheck.executeQuery()) {
+
+            while (rs.next()) {
+
+                int monIdTrongDB = rs.getInt("mon_id");
+
+                String tenTrongDB =
+                        StringUtils.normalizeVietnamese(
+                                rs.getString("ten_mon"));
+
+                // tên giống nhau nhưng khác ID
+                if (tenTrongDB.equals(normalizedTenMon)
+                        && monIdTrongDB != monAn.getMonId()) {
+
+                    throw new Exception("Tên món đã tồn tại.");
+                }
+            }
+        }
+
+        // update
+        try (PreparedStatement ps = conn.prepareStatement(sqlUpdate)) {
+
+            ps.setString(1,
+                    monAn.getTenMon()
+                            .trim()
+                            .replaceAll("\\s+", " "));
+
             ps.setInt(2, monAn.getLoaiId());
-            ps.setString(3, monAn.getTrangThai());
+
+            ps.setString(3,
+                    monAn.getTrangThai() == null
+                            ? "CON"
+                            : monAn.getTrangThai());
+
             ps.setInt(4, monAn.getMonId());
+
             ps.executeUpdate();
         }
     }
+}
 
     public void delete(int monId) throws Exception {
         // Lưu ý: cần xóa bảng giá trước nếu có FK.

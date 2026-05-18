@@ -2,12 +2,11 @@ package service;
 
 import dao.BangGiaDAO;
 import dao.MonAnDAO;
-import model.MonAn;
-import model.MonAnWithPriceDTO;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import model.MonAn;
+import model.MonAnWithPriceDTO;
 
 public class MonAnService {
     private final MonAnDAO monAnDAO = new MonAnDAO();
@@ -45,6 +44,9 @@ public class MonAnService {
             int monId = monAnDAO.insert(mon);
             bangGiaDAO.insert(new model.BangGia(0, monId, gia, LocalDate.now()));
         } catch (Exception e) {
+            if (e.getMessage().contains("đã tồn tại")) {
+                throw new ServiceException(e.getMessage());
+            }
             throw new ServiceException("Không thể thêm món ăn.", e);
         }
     }
@@ -74,6 +76,9 @@ public class MonAnService {
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
+            if (e.getMessage().contains("đã tồn tại")) {
+                throw new ServiceException(e.getMessage());
+            }
             throw new ServiceException("Không thể cập nhật món ăn.", e);
         }
     }
