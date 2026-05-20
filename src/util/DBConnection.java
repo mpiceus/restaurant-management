@@ -11,14 +11,14 @@ import java.sql.DriverManager;
 public class DBConnection {
 
     private static final String URL =
-            "jdbc:sqlserver://10.10.38.38;"
+            "jdbc:sqlserver://LAPTOP-77DVCTHN\\\\TRAM:1433;"
                     + "databaseName=QuanLyNhaHang;"
                     + "encrypt=true;"
                     + "trustServerCertificate=true;"
                     + "sendStringParametersAsUnicode=true";
 
     private static final String USER = "sa";
-    private static final String PASS = "123456";
+    private static final String PASS = "123456789";
 
     private DBConnection() {
     }
