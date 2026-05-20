@@ -167,7 +167,7 @@ public class OrderDialog extends JDialog {
 
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT));
         left.setBackground(UITheme.BEIGE);
-        left.add(new JLabel("Tong tien hang: "));
+        left.add(new JLabel("Tổng tiền món: "));
         left.add(lblTongTien);
         left.add(new JLabel(" VND"));
         bottom.add(left, BorderLayout.WEST);
@@ -235,7 +235,7 @@ public class OrderDialog extends JDialog {
 
         JLabel imgLabel = new JLabel("", SwingConstants.CENTER);
         imgLabel.setOpaque(false);
-        ImageIcon icon = tryLoadMonImage(m.getMonId(), 120);
+        ImageIcon icon = tryLoadMonImage(m.getHinhAnh(), 120);
         if (icon != null) {
             imgLabel.setIcon(icon);
             imgLabel.setText("");
@@ -247,8 +247,8 @@ public class OrderDialog extends JDialog {
         JLabel ten = new JLabel(String.valueOf(m.getTenMon()).toUpperCase());
         JLabel gia = new JLabel(MoneyUtils.formatVnd(m.getGia()) + " VND");
 
-        ten.setAlignmentX(Component.LEFT_ALIGNMENT);
-        gia.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ten.setAlignmentX(Component.CENTER_ALIGNMENT);
+        gia.setAlignmentX(Component.CENTER_ALIGNMENT);
         ten.setBorder(BorderFactory.createEmptyBorder(6, 8, 0, 8));
         gia.setBorder(BorderFactory.createEmptyBorder(2, 8, 8, 8));
 
@@ -259,7 +259,7 @@ public class OrderDialog extends JDialog {
         }
 
         card.add(Box.createVerticalStrut(8));
-        img.setAlignmentX(Component.LEFT_ALIGNMENT);
+        img.setAlignmentX(Component.CENTER_ALIGNMENT);
         card.add(img);
         card.add(ten);
         card.add(gia);
@@ -298,16 +298,18 @@ public class OrderDialog extends JDialog {
         return card;
     }
 
-    private ImageIcon tryLoadMonImage(int monId, int size) {
-        String base = "assets/monan/" + monId;
-        String[] exts = new String[]{".jpg", ".jpeg", ".png"};
-        for (String ext : exts) {
-            File f = new File(base + ext);
-            if (f.exists()) {
-                return ImageUtils.loadSquareIcon(f.getPath(), size);
-            }
+    private ImageIcon tryLoadMonImage(String imagePath, int size) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
         }
-        return null;
+
+        File f = new File(imagePath);
+
+        if (!f.exists()) {
+            return null;
+        }
+
+        return ImageUtils.loadSquareIcon(imagePath, size);
     }
 
     private void refreshOrder() {

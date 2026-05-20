@@ -13,7 +13,6 @@ public class Main {
         }
 
         UITheme.apply();
-
         SwingUtilities.invokeLater(LoginFrame::new);
     }
 }

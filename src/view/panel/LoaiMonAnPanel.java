@@ -43,7 +43,7 @@ public class LoaiMonAnPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
         p.setBackground(UITheme.BEIGE);
 
-        JButton btnRefresh = new JButton("Lam moi");
+        JButton btnRefresh = new JButton("Tải lại");
         btnRefresh.addActionListener(e -> loadData());
         p.add(btnRefresh);
 
@@ -90,12 +90,12 @@ public class LoaiMonAnPanel extends JPanel {
         JLabel title = new JLabel(String.valueOf(l.getTenLoai()).toUpperCase());
         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
         title.setBorder(BorderFactory.createEmptyBorder(10, 10, 6, 10));
-        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JPanel img = new JPanel(new BorderLayout());
         img.setPreferredSize(new Dimension(160, 160));
         img.setMaximumSize(new Dimension(160, 160));
-        img.setAlignmentX(Component.LEFT_ALIGNMENT);
+        img.setAlignmentX(Component.CENTER_ALIGNMENT);
         img.setBackground(Color.WHITE);
         img.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 

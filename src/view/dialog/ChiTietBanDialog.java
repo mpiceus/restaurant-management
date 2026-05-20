@@ -180,7 +180,8 @@ public class ChiTietBanDialog extends JDialog {
                     m.getTenMon(),
                     m.getTenLoai(),
                     m.getGia(),
-                    m.getTrangThai()
+                    m.getTrangThai(),
+                    m.getHinhAnh()
             });
         }
     }
