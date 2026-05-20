@@ -22,7 +22,7 @@ public class MonAnController {
         monAnService.create(tenMon, loaiId, trangThai, gia, hinhanh);
     }
 
-   public void update(int monId, String tenMon, int loaiId, String trangThai, BigDecimal giaMoiOrNull, File hinhAnh) throws ServiceException {
+    public void update(int monId, String tenMon, int loaiId, String trangThai, BigDecimal giaMoiOrNull, File hinhAnh) throws ServiceException {
         monAnService.update(
                 monId,
                 tenMon,
