@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": [
+        "src",
+        "lib"
+    ],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "c:\\Users\\Admin\\Documents\\TestConnection\\lib\\mssql-jdbc-13.2.1.jre11.jar"
+    ]
+}
