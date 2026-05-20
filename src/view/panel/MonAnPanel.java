@@ -182,14 +182,14 @@ public class MonAnPanel extends JPanel {
         img.setPreferredSize(new Dimension(160, 160));
         img.setMaximumSize(new Dimension(160, 160));
         img.setAlignmentX(Component.CENTER_ALIGNMENT);
-        img.setBackground(isHet ? new Color(0xDDDDDD) : Color.WHITE);
+        //img.setBackground(isHet ? new Color(0xDDDDDD) : Color.WHITE);
+        img.setOpaque(false);
 
         JLabel imgLabel = new JLabel("", SwingConstants.CENTER);
         imgLabel.setPreferredSize(new Dimension(160, 160));
         imgLabel.setMinimumSize(new Dimension(160, 160));
         imgLabel.setMaximumSize(new Dimension(160, 160));
-        imgLabel.setOpaque(true);
-        imgLabel.setBackground(Color.WHITE);
+        imgLabel.setOpaque(false);
 
         ImageIcon icon = tryLoadMonImage(m.getHinhAnh(), 160);
         if (icon != null) {
