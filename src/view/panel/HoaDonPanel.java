@@ -1,17 +1,17 @@
 package view.panel;
 
 import controller.HoaDonController;
+import java.awt.*;
+import java.io.File;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import model.HoaDonDTO;
 import util.Session;
 import view.common.TableButtonEditor;
 import view.common.TableButtonRenderer;
 import view.dialog.HoaDonDetailDialog;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * Hóa đơn:
@@ -33,11 +33,11 @@ public class HoaDonPanel extends JPanel {
         setBackground(util.UITheme.BEIGE);
 
         tableModel = new DefaultTableModel(new Object[]{
-                "ID", "Bàn", "Nhân viên", "Tổng tiền", "Ngày tạo", "Chi tiết"
+                "ID", "Bàn", "Nhân viên", "Tổng tiền", "Ngày tạo", "Chi tiết", "PDF"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5;
+                return column == 5 || column == 6;
             }
         };
         table = new JTable(tableModel);
@@ -46,6 +46,8 @@ public class HoaDonPanel extends JPanel {
 
         table.getColumn("Chi tiết").setCellRenderer(new TableButtonRenderer());
         table.getColumn("Chi tiết").setCellEditor(new TableButtonEditor("Xem", this::onViewDetailRow));
+        table.getColumn("PDF").setCellRenderer(new TableButtonRenderer());
+        table.getColumn("PDF").setCellEditor(new TableButtonEditor("Mo", this::onOpenPdfRow));
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
@@ -75,7 +77,8 @@ public class HoaDonPanel extends JPanel {
                     h.getTenNhanVien(),
                     h.getTongTien(),
                     h.getNgayTao() == null ? "" : h.getNgayTao().format(timeFmt),
-                    "Xem"
+                    "Xem",
+                    "Mo"
             });
         }
     }
@@ -84,5 +87,42 @@ public class HoaDonPanel extends JPanel {
         int hoaDonId = (Integer) tableModel.getValueAt(row, 0);
         HoaDonDetailDialog dialog = new HoaDonDetailDialog(SwingUtilities.getWindowAncestor(this), hoaDonId);
         dialog.setVisible(true);
+    }
+
+    private void onOpenPdfRow(int row) {
+
+        int hoaDonId = (Integer) tableModel.getValueAt(row, 0);
+
+        try {
+
+            HoaDonDTO hd = controller.getById(hoaDonId);
+
+            if (hd.getFilePdf() == null || hd.getFilePdf().trim().isEmpty()) {
+
+                JOptionPane.showMessageDialog(this,
+                        "Hoa don nay chua co file PDF.");
+
+                return;
+            }
+
+            File file = new File(hd.getFilePdf());
+
+            if (!file.exists()) {
+
+                JOptionPane.showMessageDialog(this,
+                        "Khong tim thay file PDF.");
+
+                return;
+            }
+
+            Desktop.getDesktop().open(file);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(this,
+                    "Khong the mo file PDF.");
+        }
     }
 }

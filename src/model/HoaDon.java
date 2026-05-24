@@ -9,16 +9,18 @@ public class HoaDon {
     private int userId;
     private BigDecimal tongTien;
     private LocalDateTime ngayTao;
+    private String filePdf;
 
     public HoaDon() {
     }
 
-    public HoaDon(int hoaDonId, int banId, int userId, BigDecimal tongTien, LocalDateTime ngayTao) {
+    public HoaDon(int hoaDonId, int banId, int userId, BigDecimal tongTien, LocalDateTime ngayTao, String filePdf) {
         this.hoaDonId = hoaDonId;
         this.banId = banId;
         this.userId = userId;
         this.tongTien = tongTien;
         this.ngayTao = ngayTao;
+        this.filePdf = filePdf;
     }
 
     public int getHoaDonId() {
@@ -59,6 +61,14 @@ public class HoaDon {
 
     public void setNgayTao(LocalDateTime ngayTao) {
         this.ngayTao = ngayTao;
+    }
+
+    public String getFilePdf() {
+        return filePdf;
+    }
+
+    public void setFilePdf(String filePdf) {
+        this.filePdf = filePdf;
     }
 }
 

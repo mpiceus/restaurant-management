@@ -5,34 +5,39 @@ import controller.ChiTietBanController;
 import controller.HoaDonController;
 import controller.LoaiMonAnController;
 import controller.MonAnController;
+import java.awt.*;
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import model.ChiTietBanDTO;
 import model.LoaiMonAn;
 import model.MonAnWithPriceDTO;
 import service.ServiceException;
+import util.ImageUtils;
 import util.MoneyUtils;
+import util.PDFInvoiceUtil;
 import util.Session;
 import util.UITheme;
-import util.ImageUtils;
 import view.common.InvoicePaperPanel;
 import view.common.TableButtonEditor;
 import view.common.TableButtonRenderer;
 import view.common.WrapLayout;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class OrderDialog extends JDialog {
     private final int banId;
     private final String tenBan;
     private final int userId;
+    private Integer currentHoaDonId = null;
+    private boolean daThanhToan = false;
+    private List<InvoicePaperPanel.LineItem> currentInvoiceItems;
+    private final JLabel lblVat = new JLabel("VAT (8%): 0 VND");
+    private final JLabel lblSvc = new JLabel("Phi dich vu (15%): 0 VND");
+    private final JLabel lblTongCong = new JLabel("Tong cong: 0 VND");
 
     private final ChiTietBanController chiTietBanController = new ChiTietBanController();
     private final MonAnController monAnController = new MonAnController();
@@ -48,8 +53,8 @@ public class OrderDialog extends JDialog {
 
     private final JPanel dishGrid = new JPanel(new WrapLayout(FlowLayout.LEFT, 12, 12));
 
-    private final DefaultTableModel orderModel;
-    private final JTable orderTable;
+    private DefaultTableModel orderModel;
+    private JTable orderTable;
     private final JLabel lblTongTien = new JLabel("0");
     private final JButton btnThanhToan = new JButton("Thanh toan");
 
@@ -62,6 +67,19 @@ public class OrderDialog extends JDialog {
         this.banId = banId;
         this.tenBan = tenBan;
         this.userId = Session.getCurrentUser().getUserId();
+        
+        Integer servingUserId = chiTietBanController.getServingUserId(banId);
+
+        if (servingUserId != null && servingUserId != userId) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ban nay dang duoc nhan vien khac phuc vu."
+            );
+
+            dispose();
+            return;
+        }
 
         setTitle("Order - " + tenBan);
         setSize(1200, 650);
@@ -104,6 +122,7 @@ public class OrderDialog extends JDialog {
         loadLoaiButtons();
         refreshDishGrid();
         refreshOrder();
+        
     }
 
     private Component buildLeftSide() {
@@ -155,6 +174,7 @@ public class OrderDialog extends JDialog {
     }
 
     private JPanel buildOrderPanel() {
+
         JPanel root = new JPanel(new BorderLayout(8, 8));
         root.setBackground(UITheme.BEIGE);
         root.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -165,17 +185,79 @@ public class OrderDialog extends JDialog {
         bottom.setBackground(UITheme.BEIGE);
         bottom.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
 
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // ===== LEFT INFO =====
+        JPanel left = new JPanel();
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         left.setBackground(UITheme.BEIGE);
-        left.add(new JLabel("Tong tien hang: "));
-        left.add(lblTongTien);
-        left.add(new JLabel(" VND"));
+
+        JPanel rowTong = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        rowTong.setBackground(UITheme.BEIGE);
+        rowTong.add(new JLabel("Tong tien hang: "));
+        rowTong.add(lblTongTien);
+        rowTong.add(new JLabel(" VND"));
+
+        JPanel rowVat = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        rowVat.setBackground(UITheme.BEIGE);
+        rowVat.add(lblVat);
+
+        JPanel rowSvc = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        rowSvc.setBackground(UITheme.BEIGE);
+        rowSvc.add(lblSvc);
+
+        JPanel rowTotal = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        rowTotal.setBackground(UITheme.BEIGE);
+
+        lblTongCong.setFont(lblTongCong.getFont().deriveFont(Font.BOLD, 14f));
+
+        rowTotal.add(lblTongCong);
+
+        left.add(rowTong);
+        left.add(Box.createVerticalStrut(4));
+        left.add(rowVat);
+        left.add(rowSvc);
+        left.add(Box.createVerticalStrut(6));
+        left.add(rowTotal);
+
         bottom.add(left, BorderLayout.WEST);
 
+        // ===== BUTTON =====
         btnThanhToan.addActionListener(e -> onThanhToan());
+        btnThanhToan.setFocusPainted(false);
+        btnThanhToan.setPreferredSize(new Dimension(140, 42));
+        btnThanhToan.setFont(new Font("SansSerif", Font.BOLD, 14));
+        btnThanhToan.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         bottom.add(btnThanhToan, BorderLayout.EAST);
 
         root.add(bottom, BorderLayout.SOUTH);
+
+        // ===== UPDATE TOTALS =====
+        orderModel.addTableModelListener(e -> {
+
+            BigDecimal tong = BigDecimal.ZERO;
+
+            for (int i = 0; i < orderModel.getRowCount(); i++) {
+
+                String raw = String.valueOf(orderModel.getValueAt(i, 5));
+
+                raw = raw.replace(".", "")
+                        .replace(" VND", "")
+                        .trim();
+
+                try {
+                    tong = tong.add(new BigDecimal(raw));
+                } catch (Exception ignored) {
+                }
+            }
+
+            BigDecimal vat = tong.multiply(BigDecimal.valueOf(0.08));
+            BigDecimal svc = tong.multiply(BigDecimal.valueOf(0.15));
+            BigDecimal total = tong.add(vat).add(svc);
+
+            lblVat.setText("VAT (8%): " + MoneyUtils.formatVnd(vat) + " VND");
+            lblSvc.setText("Phi dich vu (15%): " + MoneyUtils.formatVnd(svc) + " VND");
+            lblTongCong.setText("Tong cong: " + MoneyUtils.formatVnd(total) + " VND");
+        });
+
         return root;
     }
 
@@ -342,7 +424,13 @@ public class OrderDialog extends JDialog {
         btnThanhToan.setEnabled(!items.isEmpty());
 
         checkoutSummaryPanel.setData(tenBan, items, monById);
-        invoicePanel.setData(null, tenBan, Session.getCurrentUser().getFullName(), null, toInvoiceItems(items, monById));
+        invoicePanel.setData(currentHoaDonId == null
+                ? "CHO_THANH_TOAN"
+                : String.valueOf(currentHoaDonId), 
+                tenBan, 
+                Session.getCurrentUser().getFullName(), 
+                null, 
+                toInvoiceItems(items, monById));
     }
 
     private void onPlusRow(int row) {
@@ -387,23 +475,61 @@ public class OrderDialog extends JDialog {
     }
 
     private void onThanhToan() {
-        ((CardLayout) leftCards.getLayout()).show(leftCards, "INVOICE");
-        ((CardLayout) rightCards.getLayout()).show(rightCards, "CHECKOUT");
-        checkoutSummaryPanel.setOnHoanThanh(this::doHoanThanh);
-    }
 
-    private void doHoanThanh() {
         try {
-            int hoaDonId = hoaDonController.checkout(banId, userId);
+
+            List<ChiTietBanDTO> items = chiTietBanController.getByBanAndUser(banId, userId);
+            Map<Integer, MonAnWithPriceDTO> monById = new HashMap<>();
+            for (MonAnWithPriceDTO m : monAnController.getAll()) {
+                monById.put(m.getMonId(), m);
+            }
+            currentInvoiceItems = toInvoiceItems(items, monById);
+            currentHoaDonId = hoaDonController.checkout(banId, userId);
+            daThanhToan = true;
+            invoicePanel.setData(
+                    String.valueOf(currentHoaDonId),
+                    tenBan,
+                    Session.getCurrentUser().getFullName(),
+                    LocalDateTime.now(),
+                    currentInvoiceItems
+            );
+
             try {
                 banController.updateTrangThai(banId, "TRONG");
             } catch (Exception ignored) {
             }
-            JOptionPane.showMessageDialog(this, "Da thanh toan ban " + tenBan + " (Hoa don " + hoaDonId + ")");
-            dispose();
+
+            ((CardLayout) leftCards.getLayout())
+                    .show(leftCards, "INVOICE");
+
+            ((CardLayout) rightCards.getLayout())
+                    .show(rightCards, "CHECKOUT");
+
+            checkoutSummaryPanel.setOnHoanThanh(this::doHoanThanh);
+            checkoutSummaryPanel.setOnExportPdf(this::onExportPdf);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Da thanh toan ban "
+                            + tenBan
+                            + " (Hoa don "
+                            + currentHoaDonId
+                            + ")"
+            );
+
         } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Loi",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
+    }
+
+    private void doHoanThanh() {
+        dispose();
     }
 
     private void hideColumn(int idx) {
@@ -439,9 +565,11 @@ public class OrderDialog extends JDialog {
 
     private static class CheckoutSummaryPanel extends JPanel {
         private Runnable onHoanThanh;
+        private Runnable onExportPdf;
 
         private final JTextArea summary = new JTextArea();
         private final JButton btnHoanThanh = new JButton("Hoan thanh");
+        private final JButton btnExportPdf = new JButton("Xuat PDF");
 
         public CheckoutSummaryPanel() {
             setLayout(new BorderLayout(8, 8));
@@ -451,14 +579,33 @@ public class OrderDialog extends JDialog {
             summary.setEditable(false);
             summary.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
             summary.setBackground(Color.WHITE);
-            add(new JScrollPane(summary), BorderLayout.CENTER);
+            JPanel centerWrap = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+            summary.setPreferredSize(new Dimension(320, 420));
+
+            centerWrap.add(summary);
+
+            add(centerWrap, BorderLayout.CENTER);
 
             btnHoanThanh.addActionListener(e -> {
                 if (onHoanThanh != null) {
                     onHoanThanh.run();
                 }
             });
-            add(btnHoanThanh, BorderLayout.SOUTH);
+
+            btnExportPdf.addActionListener(e -> {
+                if (onExportPdf != null) {
+                    onExportPdf.run();
+                }
+            });
+            JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+            actions.setBackground(UITheme.BEIGE);
+
+            actions.add(btnExportPdf);
+            actions.add(btnHoanThanh);
+
+            add(actions, BorderLayout.SOUTH);
         }
 
         public void setOnHoanThanh(Runnable r) {
@@ -487,5 +634,62 @@ public class OrderDialog extends JDialog {
             summary.setText(sb.toString());
             summary.setCaretPosition(0);
         }
+
+        public void setOnExportPdf(Runnable r) {
+            this.onExportPdf = r;
+        }
     }
+
+    private void onExportPdf() {
+
+            try {
+
+                if (currentInvoiceItems == null
+                        || currentInvoiceItems.isEmpty()) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Khong co du lieu hoa don."
+                    );
+
+                    return;
+                }
+
+                // tạo folder nếu chưa có
+                File folder = new File("assets/hoadon");
+
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
+
+                String filePath =
+                        "assets/hoadon/hoa_" + currentHoaDonId + "_"
+                                + System.currentTimeMillis()
+                                + ".pdf";
+
+                PDFInvoiceUtil.exportInvoice(
+                        filePath,
+                        String.valueOf(currentHoaDonId),
+                        tenBan,
+                        Session.getCurrentUser().getFullName(),
+                        LocalDateTime.now(),
+                        currentInvoiceItems
+                );
+
+                hoaDonController.updateFilePdf(
+                        currentHoaDonId,
+                        filePath
+                );
+
+                JOptionPane.showMessageDialog(this,
+                        "Da xuat PDF:\n" + filePath);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                JOptionPane.showMessageDialog(this,
+                        "Khong the xuat PDF.");
+            }
+        }
 }

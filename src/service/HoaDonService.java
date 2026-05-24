@@ -105,4 +105,12 @@ public class HoaDonService {
         } catch (Exception ignored) {
         }
     }
+
+    public void updateFilePdf(int hoaDonId, String path) throws ServiceException {
+        try {
+            hoaDonDAO.updateFilePdf(hoaDonId, path);
+        } catch (Exception e) {
+            throw new ServiceException("Khong the luu file PDF.", e);
+        }
+    }
 }

@@ -1,8 +1,5 @@
 package dao;
 
-import model.HoaDonDTO;
-import util.DBConnection;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,6 +8,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import model.HoaDonDTO;
+import util.DBConnection;
 
 public class HoaDonDAO {
 
@@ -40,7 +39,7 @@ public class HoaDonDAO {
 
     public List<HoaDonDTO> findAllHoaDon() {
         String sql =
-                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao " +
+                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao, h.file_pdf " +
                         "FROM HoaDon h " +
                         "JOIN Ban b ON h.ban_id = b.ban_id " +
                         "JOIN Users u ON h.user_id = u.user_id " +
@@ -59,7 +58,8 @@ public class HoaDonDAO {
                         rs.getInt("user_id"),
                         rs.getString("ten_nv"),
                         rs.getBigDecimal("tong_tien"),
-                        t == null ? null : t.toLocalDateTime()
+                        t == null ? null : t.toLocalDateTime(),
+                        rs.getString("file_pdf")
                 ));
             }
         } catch (Exception e) {
@@ -70,7 +70,7 @@ public class HoaDonDAO {
 
     public List<HoaDonDTO> findHoaDonByUser(int userId) {
         String sql =
-                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao " +
+                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao, h.file_pdf " +
                         "FROM HoaDon h " +
                         "JOIN Ban b ON h.ban_id = b.ban_id " +
                         "JOIN Users u ON h.user_id = u.user_id " +
@@ -91,7 +91,8 @@ public class HoaDonDAO {
                             rs.getInt("user_id"),
                             rs.getString("ten_nv"),
                             rs.getBigDecimal("tong_tien"),
-                            t == null ? null : t.toLocalDateTime()
+                            t == null ? null : t.toLocalDateTime(),
+                            rs.getString("file_pdf")
                     ));
                 }
             }
@@ -103,7 +104,7 @@ public class HoaDonDAO {
 
     public HoaDonDTO findById(int hoaDonId) {
         String sql =
-                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao " +
+                "SELECT h.hoadon_id, h.ban_id, b.ten_ban, h.user_id, COALESCE(u.fullname, u.username) AS ten_nv, h.tong_tien, h.ngay_tao, h.file_pdf " +
                         "FROM HoaDon h " +
                         "JOIN Ban b ON h.ban_id = b.ban_id " +
                         "JOIN Users u ON h.user_id = u.user_id " +
@@ -122,7 +123,8 @@ public class HoaDonDAO {
                             rs.getInt("user_id"),
                             rs.getString("ten_nv"),
                             rs.getBigDecimal("tong_tien"),
-                            t == null ? null : t.toLocalDateTime()
+                            t == null ? null : t.toLocalDateTime(),
+                            rs.getString("file_pdf")
                     );
                 }
             }
@@ -130,5 +132,23 @@ public class HoaDonDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void updateFilePdf(int hoaDonId, String path) throws Exception {
+
+        String sql = """
+                UPDATE HoaDon
+                SET file_pdf = ?
+                WHERE hoadon_id = ?
+                """;
+
+        try (Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, path);
+            ps.setInt(2, hoaDonId);
+
+            ps.executeUpdate();
+        }
     }
 }

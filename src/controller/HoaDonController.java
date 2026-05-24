@@ -1,10 +1,9 @@
 package controller;
 
+import java.util.List;
 import model.HoaDonDTO;
 import service.HoaDonService;
 import service.ServiceException;
-
-import java.util.List;
 
 public class HoaDonController {
     private final HoaDonService hoaDonService = new HoaDonService();
@@ -27,5 +26,10 @@ public class HoaDonController {
 
     public HoaDonDTO getById(int hoaDonId) {
         return hoaDonService.getHoaDonById(hoaDonId);
+    }
+
+    public void updateFilePdf(int hoaDonId, String path) 
+            throws ServiceException {
+        hoaDonService.updateFilePdf(hoaDonId, path);
     }
 }

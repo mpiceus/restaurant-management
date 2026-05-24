@@ -1,9 +1,8 @@
 package service;
 
 import dao.ChiTietBanDAO;
-import model.ChiTietBanDTO;
-
 import java.util.List;
+import model.ChiTietBanDTO;
 
 public class ChiTietBanService {
     private final ChiTietBanDAO chiTietBanDAO = new ChiTietBanDAO();
@@ -12,6 +11,9 @@ public class ChiTietBanService {
         return chiTietBanDAO.findByBanAndUser(banId, userId);
     }
 
+    public Integer getServingUserId(int banId) {
+        return chiTietBanDAO.findServingUserId(banId);
+    }
     public void addMon(int banId, int monId, int soLuong, int userId) throws ServiceException {
         if (soLuong <= 0) {
             throw new ServiceException("Số lượng phải > 0.");
