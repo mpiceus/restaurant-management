@@ -1,9 +1,8 @@
 package controller;
 
+import javax.swing.*;
 import util.UITheme;
 import view.LoginFrame;
-
-import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {

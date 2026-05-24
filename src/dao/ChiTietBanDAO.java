@@ -1,14 +1,13 @@
 package dao;
 
-import model.ChiTietBanDTO;
-import util.DBConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import model.ChiTietBanDTO;
+import util.DBConnection;
 
 public class ChiTietBanDAO {
 
@@ -41,6 +40,34 @@ public class ChiTietBanDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public Integer findServingUserId(int banId) {
+
+        String sql = """
+            SELECT TOP 1 user_id
+            FROM ChiTietBan
+            WHERE ban_id = ?
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+
+            ps.setInt(1, banId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("user_id");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public void insert(int banId, int monId, int soLuong, int userId) throws Exception {

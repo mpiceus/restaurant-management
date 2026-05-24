@@ -1,16 +1,19 @@
 package controller;
 
+import java.util.List;
 import model.ChiTietBanDTO;
 import service.ChiTietBanService;
 import service.ServiceException;
-
-import java.util.List;
 
 public class ChiTietBanController {
     private final ChiTietBanService chiTietBanService = new ChiTietBanService();
 
     public List<ChiTietBanDTO> getByBanAndUser(int banId, int userId) {
         return chiTietBanService.getByBanAndUser(banId, userId);
+    }
+
+    public Integer getServingUserId(int banId) {
+        return chiTietBanService.getServingUserId(banId);
     }
 
     public void addMon(int banId, int monId, int soLuong, int userId) throws ServiceException {

@@ -14,9 +14,10 @@ public class HoaDonDTO {
     private String tenNhanVien;
     private BigDecimal tongTien;
     private LocalDateTime ngayTao;
+    private String filePdf;
 
     public HoaDonDTO(int hoaDonId, int banId, String tenBan, int userId, String tenNhanVien, BigDecimal tongTien,
-                     LocalDateTime ngayTao) {
+                     LocalDateTime ngayTao, String filePdf) {
         this.hoaDonId = hoaDonId;
         this.banId = banId;
         this.tenBan = tenBan;
@@ -24,6 +25,7 @@ public class HoaDonDTO {
         this.tenNhanVien = tenNhanVien;
         this.tongTien = tongTien;
         this.ngayTao = ngayTao;
+        this.filePdf = filePdf;
     }
 
     public int getHoaDonId() {
@@ -52,6 +54,14 @@ public class HoaDonDTO {
 
     public LocalDateTime getNgayTao() {
         return ngayTao;
+    }
+
+    public String getFilePdf() {
+        return filePdf;
+    }
+
+    public void setFilePdf(String filePdf) {
+        this.filePdf = filePdf;
     }
 }
 

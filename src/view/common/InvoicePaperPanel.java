@@ -1,16 +1,15 @@
 package view.common;
 
-import util.MoneyUtils;
-import util.UITheme;
-
-import javax.swing.*;
-import javax.swing.text.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.text.*;
+import util.MoneyUtils;
+import util.UITheme;
 
 public class InvoicePaperPanel extends JPanel {
     public static class LineItem {
@@ -54,7 +53,7 @@ public class InvoicePaperPanel extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xCCCCCC)),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
-        paper.setPreferredSize(new Dimension(380, 560));
+        paper.setPreferredSize(new Dimension(260, 560));
         paper.add(pane, BorderLayout.CENTER);
 
         JPanel center = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
@@ -86,20 +85,31 @@ public class InvoicePaperPanel extends JPanel {
         append("Ban: " + (tenBan == null ? "" : tenBan) + "\n", normal);
         append("Nhan vien: " + (nhanVien == null ? "" : nhanVien) + "\n", normal);
 
-        String sep = "-----------------------------\n";
+        String sep = "------------------------------------\n";
+
         append(sep, normal);
 
-        append(String.format("%-16s %5s %10s\n", "Ten mon", "SL", "Thanh tien"), bold);
+        append(String.format("%-15s %3s %10s\n",
+                "Ten mon",
+                "SL",
+                "Tien"), bold);
+
         append(sep, normal);
 
         BigDecimal tong = BigDecimal.ZERO;
+
         for (LineItem it : safe(items)) {
-            BigDecimal thanhTien = it.donGia.multiply(BigDecimal.valueOf(it.soLuong));
+
+            BigDecimal thanhTien =
+                    it.donGia.multiply(BigDecimal.valueOf(it.soLuong));
+
             tong = tong.add(thanhTien);
-            append(String.format("%-16s %5d %10s\n",
-                    safeCut(it.tenMon, 16),
+
+            append(String.format("%-15s %3d %10s\n",
+                    safeCut(it.tenMon, 12),
                     it.soLuong,
-                    MoneyUtils.formatVnd(thanhTien)), normal);
+                    MoneyUtils.formatVnd(thanhTien)),
+                    normal);
         }
 
         append(sep, normal);
@@ -108,11 +118,23 @@ public class InvoicePaperPanel extends JPanel {
         BigDecimal svc = tong.multiply(BigDecimal.valueOf(0.15));
         BigDecimal total = tong.add(vat).add(svc);
 
-        append(String.format("%-22s %10s\n", "Tong thanh tien", MoneyUtils.formatVnd(tong)), normal);
-        append(String.format("%-22s %10s\n", "VAT (8%)", MoneyUtils.formatVnd(vat)), normal);
-        append(String.format("%-22s %10s\n", "Phi dich vu (15%)", MoneyUtils.formatVnd(svc)), normal);
+        append(String.format("%-19s %10s\n",
+        "Tong tien",
+        MoneyUtils.formatVnd(tong)), normal);
+
+        append(String.format("%-19s %10s\n",
+                "VAT (8%)",
+                MoneyUtils.formatVnd(vat)), normal);
+
+        append(String.format("%-19s %10s\n",
+                "Phi DV",
+                MoneyUtils.formatVnd(svc)), normal);
+
         append(sep, normal);
-        append(String.format("%-22s %10s\n", "Tong cong", MoneyUtils.formatVnd(total)), bold);
+
+        append(String.format("%-19s %10s\n",
+                "Tong cong",
+                MoneyUtils.formatVnd(total)), bold);
 
         pane.setCaretPosition(0);
     }
