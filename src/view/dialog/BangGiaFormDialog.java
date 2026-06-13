@@ -1,14 +1,15 @@
 package view.dialog;
 
 import controller.MonAnController;
-import model.MonAnWithPriceDTO;
-
-import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javax.swing.*;
+import model.MonAnWithPriceDTO;
+import util.RoundedButtonUI;
+import util.UITheme;
 
 public class BangGiaFormDialog extends JDialog {
     public static class InitialData {
@@ -98,7 +99,13 @@ public class BangGiaFormDialog extends JDialog {
         form.add(txtNgay);
 
         JButton btnCancel = new JButton("Hủy");
+        btnCancel.setUI(new RoundedButtonUI());
+        btnCancel.setBackground(UITheme.LATTE);
+        btnCancel.setForeground(Color.WHITE);
         JButton btnSave = new JButton("Lưu");
+        btnSave.setUI(new RoundedButtonUI());
+        btnSave.setBackground(UITheme.CARAMEL);
+        btnSave.setForeground(Color.WHITE);
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> onSave());
 
@@ -146,4 +153,3 @@ public class BangGiaFormDialog extends JDialog {
         return LocalDate.parse(txtNgay.getText().trim(), dateFmt);
     }
 }
-

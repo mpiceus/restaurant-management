@@ -2,16 +2,16 @@ package view;
 
 import controller.LoginController;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.*;
+import util.RoundedButtonUI;
+import util.RoundedPanel;
 import util.UITheme;
 import view.common.RoundedPasswordField;
 import view.common.RoundedTextField;
 
 public class LoginFrame extends JFrame {
-    private final RoundedTextField txtUsername = new RoundedTextField("Username");
-    private final RoundedPasswordField txtPassword = new RoundedPasswordField("Password");
+    private final RoundedTextField txtUsername = new RoundedTextField("Tên đăng nhập");
+    private final RoundedPasswordField txtPassword = new RoundedPasswordField("Mật khẩu");
     private final LoginController controller = new LoginController();
 
     public LoginFrame() {
@@ -21,7 +21,6 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
 
         initUI();
-
         setVisible(true);
     }
 
@@ -29,23 +28,25 @@ public class LoginFrame extends JFrame {
         getContentPane().setBackground(UITheme.BEIGE);
         setLayout(new GridBagLayout());
 
-        JPanel card = new JPanel();
-        card.setBackground(UITheme.BEIGE);
+        RoundedPanel card = new RoundedPanel(18);
+        card.setBackground(UITheme.SAND);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
         card.setPreferredSize(new Dimension(440, 520));
 
-        JPanel logo = new JPanel();
+        JLabel logo = new JLabel();
         logo.setPreferredSize(new Dimension(360, 160));
         logo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
-        logo.setBackground(Color.WHITE);
-        logo.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1, true));
-        // Placeholder: user will add logo later
-        card.add(logo);
+        logo.setHorizontalAlignment(SwingConstants.CENTER);
+        logo.setVerticalAlignment(SwingConstants.CENTER);
+        logo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logo.setOpaque(false);
 
+        logo.setIcon(resizeIcon("/logo.png", 140, 140));
+        card.add(logo);
         card.add(Box.createVerticalStrut(14));
 
-        JLabel title = new JLabel("NHA HANG UMAMI BAM", SwingConstants.CENTER);
+        JLabel title = new JLabel("NHÀ HÀNG UMAMI BAM", SwingConstants.CENTER);
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         card.add(title);
@@ -65,10 +66,18 @@ public class LoginFrame extends JFrame {
         actions.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
 
         JButton btnExit = new JButton("Thoát");
+
         JButton btnLogin = new JButton("Đăng nhập");
 
-        styleSecondary(btnExit);
-        styleSecondary(btnLogin);
+        //styleSecondary(btnExit);
+        btnExit.setUI(new RoundedButtonUI());
+        btnExit.setBackground(UITheme.LATTE);
+        btnExit.setForeground(Color.WHITE);
+
+        //styleSecondary(btnLogin);
+        btnLogin.setUI(new RoundedButtonUI());
+        btnLogin.setBackground(UITheme.CARAMEL);
+        btnLogin.setForeground(Color.WHITE);
 
         btnLogin.addActionListener(e -> doLogin());
         btnExit.addActionListener(e -> System.exit(0));
@@ -83,69 +92,16 @@ public class LoginFrame extends JFrame {
         add(card, new GridBagConstraints());
     }
 
-    private void stylePrimary(JButton b) {
-        Color base = new Color(0xC7A77A);
-        Color hover = new Color(0xB89260);
-        Color press = new Color(0xA97D48);
-        b.setFocusPainted(false);
-        b.setBackground(base);
-        b.setForeground(Color.WHITE);
-        b.setBorder(BorderFactory.createLineBorder(base.darker(), 1, true));
-        b.setOpaque(true);
-        b.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                b.setBackground(hover);
-            }
+    private ImageIcon resizeIcon(String path, int width, int height) {
+        ImageIcon icon = new ImageIcon(getClass().getResource(path));
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-                b.setBackground(base);
-            }
+        Image img = icon.getImage().getScaledInstance(
+                width,
+                height,
+                Image.SCALE_SMOOTH
+        );
 
-            @Override
-            public void mousePressed(MouseEvent e) {
-                b.setBackground(press);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                b.setBackground(b.getBounds().contains(e.getPoint()) ? hover : base);
-            }
-        });
-    }
-
-    private void styleSecondary(JButton b) {
-        Color base = Color.WHITE;
-        Color hover = new Color(0xF2E9DA);
-        Color press = new Color(0xE2D6C0);
-        Color border = new Color(0xC7A77A);
-        b.setFocusPainted(false);
-        b.setBackground(base);
-        b.setForeground(border.darker());
-        b.setBorder(BorderFactory.createLineBorder(border, 1, true));
-        b.setOpaque(true);
-        b.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                b.setBackground(hover);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                b.setBackground(base);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                b.setBackground(press);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                b.setBackground(b.getBounds().contains(e.getPoint()) ? hover : base);
-            }
-        });
+        return new ImageIcon(img);
     }
 
     private void doLogin() {
@@ -154,4 +110,3 @@ public class LoginFrame extends JFrame {
         controller.login(username, password, this);
     }
 }
-

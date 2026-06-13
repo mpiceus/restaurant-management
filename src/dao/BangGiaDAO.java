@@ -1,8 +1,5 @@
 package dao;
 
-import model.BangGia;
-import util.DBConnection;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
@@ -12,8 +9,14 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import model.BangGia;
+import util.DBConnection;
 
-public class BangGiaDAO {
+public class BangGiaDAO extends BaseDAO<BangGia> {
+
+    public BangGiaDAO() {
+        super("BangGia");
+    }
 
     public List<BangGia> findAll() {
         String sql = "SELECT banggia_id, mon_id, gia, ngay_ap_dung FROM BangGia ORDER BY ngay_ap_dung DESC, banggia_id DESC";
@@ -45,6 +48,7 @@ public class BangGiaDAO {
         return null;
     }
 
+    @Override
     public int insert(BangGia bangGia) throws Exception {
         // Khi thêm mới: mặc định ngày = current date (nếu null)
         LocalDate date = bangGia.getNgayApDung() == null ? LocalDate.now() : bangGia.getNgayApDung();
@@ -65,6 +69,7 @@ public class BangGiaDAO {
         throw new Exception("Không lấy được banggia_id sau khi insert BangGia.");
     }
 
+    @Override
     public void update(BangGia bangGia) throws Exception {
         String sql = "UPDATE BangGia SET mon_id = ?, gia = ?, ngay_ap_dung = ? WHERE banggia_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -77,6 +82,7 @@ public class BangGiaDAO {
         }
     }
 
+    @Override
     public void delete(int bangGiaId) throws Exception {
         String sql = "DELETE FROM BangGia WHERE banggia_id = ?";
         try (Connection conn = DBConnection.getConnection();

@@ -1,16 +1,19 @@
 package dao;
 
-import model.LoaiMonAn;
-import util.DBConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import model.LoaiMonAn;
+import util.DBConnection;
 
-public class LoaiMonAnDAO {
+public class LoaiMonAnDAO extends BaseDAO<LoaiMonAn> {
+
+    public LoaiMonAnDAO() {
+        super("LoaiMonAn");
+    }
 
     public List<LoaiMonAn> findAll() {
         String sql = "SELECT loai_id, ten_loai FROM LoaiMonAn ORDER BY loai_id DESC";
@@ -43,6 +46,7 @@ public class LoaiMonAnDAO {
         return null;
     }
 
+    @Override
     public int insert(LoaiMonAn loai) throws Exception {
         String sql = "INSERT INTO LoaiMonAn(ten_loai) VALUES (?)";
         try (Connection conn = DBConnection.getConnection();
@@ -58,6 +62,7 @@ public class LoaiMonAnDAO {
         throw new Exception("Không lấy được loai_id sau khi insert LoaiMonAn.");
     }
 
+    @Override
     public void update(LoaiMonAn loai) throws Exception {
         String sql = "UPDATE LoaiMonAn SET ten_loai = ? WHERE loai_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -68,6 +73,7 @@ public class LoaiMonAnDAO {
         }
     }
 
+    @Override
     public void delete(int loaiId) throws Exception {
         String sql = "DELETE FROM LoaiMonAn WHERE loai_id = ?";
         try (Connection conn = DBConnection.getConnection();

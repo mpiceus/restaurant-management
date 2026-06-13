@@ -17,7 +17,11 @@ import util.StringUtils;
  * <p>
  * Lưu ý: giá (gia) nằm ở bảng BangGia, không nằm trong MonAn.
  */
-public class MonAnDAO {
+public class MonAnDAO extends BaseDAO<MonAn> {
+
+    public MonAnDAO(){
+        super("MonAn");
+    }
 
     public List<MonAnWithPriceDTO> findAllWithLatestPrice() {
         String sql =
@@ -95,10 +99,6 @@ public class MonAnDAO {
                 .append("WHERE 1=1 ");
 
         List<Object> params = new ArrayList<>();
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append("AND m.ten_mon LIKE ? ");
-            params.add("%" + keyword.trim() + "%");
-        }
         if (loaiId != null) {
             sql.append("AND m.loai_id = ? ");
             params.add(loaiId);
@@ -125,7 +125,23 @@ public class MonAnDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+        return filterByKeyword(list, keyword);
+    }
+
+    private List<MonAnWithPriceDTO> filterByKeyword(List<MonAnWithPriceDTO> list, String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return list;
+        }
+
+        String normalizedKeyword = StringUtils.normalizeVietnamese(keyword);
+        List<MonAnWithPriceDTO> filtered = new ArrayList<>();
+        for (MonAnWithPriceDTO item : list) {
+            String normalizedName = StringUtils.normalizeVietnamese(item.getTenMon());
+            if (normalizedName.contains(normalizedKeyword)) {
+                filtered.add(item);
+            }
+        }
+        return filtered;
     }
 
     public MonAn findById(int monId) {
@@ -150,6 +166,7 @@ public class MonAnDAO {
         return null;
     }
 
+    @Override
     public int insert(MonAn monAn) throws Exception {
 
     String normalizedTenMon = StringUtils.normalizeVietnamese(monAn.getTenMon());
@@ -205,6 +222,7 @@ public class MonAnDAO {
     throw new Exception("Không lấy được mon_id.");
 }
 
+    @Override
     public void update(MonAn monAn) throws Exception {
 
     String normalizedTenMon =
@@ -289,6 +307,7 @@ public class MonAnDAO {
         }
     }
 
+    @Override
     public void delete(int monId) throws Exception {
         // Lưu ý: cần xóa bảng giá trước nếu có FK.
         String sql = "DELETE FROM MonAn WHERE mon_id = ?";

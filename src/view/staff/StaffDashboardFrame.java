@@ -1,7 +1,10 @@
 package view.staff;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import util.RoundedButtonUI;
 import util.Session;
 import util.UITheme;
 import view.LoginFrame;
@@ -13,6 +16,7 @@ import view.panel.MonAnPanel;
 public class StaffDashboardFrame extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel content = new JPanel(cardLayout);
+    private final List<JButton> navButtons = new ArrayList<>();
 
     public StaffDashboardFrame() {
         setTitle("Dashboard STAFF - Quản lý nhà hàng");
@@ -44,7 +48,7 @@ public class StaffDashboardFrame extends JFrame {
     private JPanel buildSidebar() {
         JPanel side = new JPanel(new BorderLayout());
         side.setBackground(UITheme.BEIGE_2);
-        side.setPreferredSize(new Dimension(210, 0));
+        side.setPreferredSize(new Dimension(240, 0));
 
         JPanel top = new JPanel();
         top.setOpaque(false);
@@ -82,6 +86,9 @@ public class StaffDashboardFrame extends JFrame {
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
 
         JButton logout = new JButton("Đăng xuất");
+        logout.setUI(new RoundedButtonUI());
+        logout.setBackground(UITheme.LATTE);
+        logout.setForeground(Color.WHITE);
         logout.setAlignmentX(Component.LEFT_ALIGNMENT);
         logout.addActionListener(e -> {
             Session.clear();
@@ -95,13 +102,34 @@ public class StaffDashboardFrame extends JFrame {
     }
 
     private JButton navButton(String label, String card) {
+
         JButton b = new JButton(label);
+
         b.setHorizontalAlignment(SwingConstants.LEFT);
         b.setFocusPainted(false);
-        b.setBackground(UITheme.BEIGE);
-        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        b.addActionListener(e -> cardLayout.show(content, card));
+        b.setBackground(UITheme.SIDEBAR);
+        b.setForeground(UITheme.SIDEBAR_TEXT);
+        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        //b.setMargin(new Insets(0, 14, 0, 0));
+        b.setUI(new RoundedButtonUI());
+
+        navButtons.add(b);
+
+        b.addActionListener(e -> {
+
+            cardLayout.show(content, card);
+
+            // reset toàn bộ menu
+            for (JButton btn : navButtons) {
+                btn.setBackground(UITheme.SIDEBAR);
+            }
+
+            // tô màu menu đang chọn
+            b.setBackground(UITheme.CARAMEL);
+
+            content.repaint();
+        });
+
         return b;
     }
 }
-

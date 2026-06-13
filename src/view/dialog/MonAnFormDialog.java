@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import javax.swing.*;
 import model.LoaiMonAn;
+import util.RoundedButtonUI;
+import util.UITheme;
 
 public class MonAnFormDialog extends JDialog {
     public static class InitialData {
@@ -31,7 +33,7 @@ public class MonAnFormDialog extends JDialog {
 
     private final JTextField txtTenMon = new JTextField();
     private final JComboBox<LoaiMonAn> cbLoai = new JComboBox<>();
-    private final JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"CON", "HET"});
+    private final JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"CÒN", "HẾT"});
     private final JTextField txtGia = new JTextField();
     private String oldImagePath;
 
@@ -42,11 +44,14 @@ public class MonAnFormDialog extends JDialog {
         setLocationRelativeTo(parent);
 
         initLoai(loaiController);
+        btnChooseImage.setUI(new RoundedButtonUI());
+        btnChooseImage.setBackground(UITheme.CARAMEL);
+        btnChooseImage.setForeground(Color.WHITE);
         btnChooseImage.addActionListener(e -> chooseImage());
 
         if (initial != null) {
             txtTenMon.setText(initial.tenMon);
-            cbTrangThai.setSelectedItem(initial.trangThai == null ? "CON" : initial.trangThai);
+            cbTrangThai.setSelectedItem(initial.trangThai == null ? "CÒN" : initial.trangThai);
             selectLoai(initial.loaiId);
             txtGia.setText(""); // sửa: giá mới là optional, để trống = không thêm dòng BangGia mới
             oldImagePath = initial.hinhAnh;
@@ -61,7 +66,7 @@ public class MonAnFormDialog extends JDialog {
                 );
             }
         } else {
-            cbTrangThai.setSelectedItem("CON");
+            cbTrangThai.setSelectedItem("CÒN");
         }
 
         buildUI(initial != null);
@@ -126,7 +131,13 @@ public class MonAnFormDialog extends JDialog {
         form.add(imagePanel);
 
         JButton btnCancel = new JButton("Hủy");
+        btnCancel.setUI(new RoundedButtonUI());
+        btnCancel.setBackground(UITheme.LATTE);
+        btnCancel.setForeground(Color.WHITE);
         JButton btnSave = new JButton("Lưu");
+        btnSave.setUI(new RoundedButtonUI());
+        btnSave.setBackground(UITheme.CARAMEL);
+        btnSave.setForeground(Color.WHITE);
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> onSave(isEdit));
 
@@ -201,7 +212,7 @@ public class MonAnFormDialog extends JDialog {
 
     private File hinhAnh;
 
-    private final JButton btnChooseImage = new JButton("Chon anh");
+    private final JButton btnChooseImage = new JButton("Chọn ảnh");
 
     private final JLabel lblImage = new JLabel("Chua chon anh");
 

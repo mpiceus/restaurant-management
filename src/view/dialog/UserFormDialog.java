@@ -1,9 +1,10 @@
 package view.dialog;
 
-import util.Role;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
+import util.Role;
+import util.RoundedButtonUI;
+import util.UITheme;
 
 public class UserFormDialog extends JDialog {
     public static class InitialData {
@@ -61,7 +62,14 @@ public class UserFormDialog extends JDialog {
         form.add(cbRole);
 
         JButton btnCancel = new JButton("Hủy");
+        btnCancel.setUI(new RoundedButtonUI());
+        btnCancel.setBackground(UITheme.LATTE);
+        btnCancel.setForeground(Color.WHITE);
         JButton btnSave = new JButton("Lưu");
+        btnSave.setUI(new RoundedButtonUI());
+        btnSave.setBackground(UITheme.CARAMEL);
+        btnSave.setForeground(Color.WHITE);
+        
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> onSave());
 

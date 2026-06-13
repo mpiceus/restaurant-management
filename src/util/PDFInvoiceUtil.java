@@ -1,6 +1,9 @@
 package util;
 
 import com.lowagie.text.*;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import view.common.InvoicePaperPanel;
 
@@ -40,25 +43,10 @@ public class PDFInvoiceUtil {
         document.open();
 
         // FONT
-        Font titleFont = FontFactory.getFont(
-                FontFactory.COURIER_BOLD,
-                15
-        );
-
-        Font normalFont = FontFactory.getFont(
-                FontFactory.COURIER,
-                9
-        );
-
-        Font boldFont = FontFactory.getFont(
-                FontFactory.COURIER_BOLD,
-                9
-        );
-
-        Font totalFont = FontFactory.getFont(
-                FontFactory.COURIER_BOLD,
-                10
-        );
+        Font titleFont = createUnicodeFont(15, Font.BOLD);
+        Font normalFont = createUnicodeFont(9, Font.NORMAL);
+        Font boldFont = createUnicodeFont(9, Font.BOLD);
+        Font totalFont = createUnicodeFont(10, Font.BOLD);
 
         // FORMAT TIME
         DateTimeFormatter fmt =
@@ -134,89 +122,40 @@ public class PDFInvoiceUtil {
                 normalFont
         ));
 
-        // TABLE HEADER
-        document.add(new Paragraph(
-                String.format(
-                        "%-16s %4s %10s",
-                        "Ten mon",
-                        "SL",
-                        "Thanh tien"
-                ),
-                boldFont
-        ));
+        PdfPTable itemTable = new PdfPTable(new float[]{0.62f, 0.14f, 0.24f});
+        itemTable.setWidthPercentage(100);
+        itemTable.setSpacingBefore(2f);
+        itemTable.setSpacingAfter(4f);
 
-        document.add(new Paragraph(
-                "----------------------------------",
-                normalFont
-        ));
+        itemTable.addCell(headerCell("Ten mon", boldFont, Element.ALIGN_LEFT));
+        itemTable.addCell(headerCell("SL", boldFont, Element.ALIGN_CENTER));
+        itemTable.addCell(headerCell("Thanh tien", boldFont, Element.ALIGN_RIGHT));
 
-        // ITEMS
         for (InvoicePaperPanel.LineItem item : items) {
-
-            BigDecimal thanhTien =
-                    item.donGia.multiply(
-                            BigDecimal.valueOf(item.soLuong)
-                    );
-
-            String line = String.format(
-                    "%-16s %4d %10s",
-                    safe(item.tenMon, 16),
-                    item.soLuong,
-                    MoneyUtils.formatVnd(thanhTien)
-            );
-
-            document.add(new Paragraph(
-                    line,
-                    normalFont
-            ));
+            BigDecimal thanhTien = item.donGia.multiply(BigDecimal.valueOf(item.soLuong));
+            itemTable.addCell(bodyCell(safe(item.tenMon, 16), normalFont, Element.ALIGN_LEFT));
+            itemTable.addCell(bodyCell(String.valueOf(item.soLuong), normalFont, Element.ALIGN_CENTER));
+            itemTable.addCell(bodyCell(MoneyUtils.formatVnd(thanhTien), normalFont, Element.ALIGN_RIGHT));
         }
 
-        document.add(new Paragraph(
-                "----------------------------------",
-                normalFont
-        ));
+        document.add(itemTable);
 
         // TOTALS
-        document.add(new Paragraph(
-                String.format(
-                        "%-22s %10s",
-                        "Tong thanh tien",
-                        MoneyUtils.formatVnd(tong)
-                ),
-                normalFont
-        ));
+        PdfPTable totalTable = new PdfPTable(new float[]{0.66f, 0.34f});
+        totalTable.setWidthPercentage(100);
+        totalTable.setSpacingBefore(2f);
+        totalTable.setSpacingAfter(2f);
 
-        document.add(new Paragraph(
-                String.format(
-                        "%-22s %10s",
-                        "VAT (8%)",
-                        MoneyUtils.formatVnd(vat)
-                ),
-                normalFont
-        ));
+        totalTable.addCell(labelCell("Tong thanh tien", normalFont));
+        totalTable.addCell(valueCell(MoneyUtils.formatVnd(tong), normalFont));
+        totalTable.addCell(labelCell("VAT (8%)", normalFont));
+        totalTable.addCell(valueCell(MoneyUtils.formatVnd(vat), normalFont));
+        totalTable.addCell(labelCell("Phi dich vu (15%)", normalFont));
+        totalTable.addCell(valueCell(MoneyUtils.formatVnd(svc), normalFont));
+        totalTable.addCell(labelCell("Tong cong", totalFont));
+        totalTable.addCell(valueCell(MoneyUtils.formatVnd(total), totalFont));
 
-        document.add(new Paragraph(
-                String.format(
-                        "%-22s %10s",
-                        "Phi dich vu (15%)",
-                        MoneyUtils.formatVnd(svc)
-                ),
-                normalFont
-        ));
-
-        document.add(new Paragraph(
-                "----------------------------------",
-                normalFont
-        ));
-
-        document.add(new Paragraph(
-                String.format(
-                        "%-22s %10s",
-                        "Tong cong",
-                        MoneyUtils.formatVnd(total)
-                ),
-                totalFont
-        ));
+        document.add(totalTable);
 
         document.add(new Paragraph(" "));
 
@@ -233,6 +172,42 @@ public class PDFInvoiceUtil {
         document.close();
     }
 
+    private static PdfPCell headerCell(String text, Font font, int align) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPaddingTop(2f);
+        cell.setPaddingBottom(3f);
+        cell.setHorizontalAlignment(align);
+        return cell;
+    }
+
+    private static PdfPCell bodyCell(String text, Font font, int align) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPaddingTop(2f);
+        cell.setPaddingBottom(2f);
+        cell.setHorizontalAlignment(align);
+        return cell;
+    }
+
+    private static PdfPCell labelCell(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPaddingTop(2f);
+        cell.setPaddingBottom(1f);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        return cell;
+    }
+
+    private static PdfPCell valueCell(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPaddingTop(2f);
+        cell.setPaddingBottom(1f);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        return cell;
+    }
+
     private static String safe(String s, int max) {
 
         if (s == null) {
@@ -246,5 +221,18 @@ public class PDFInvoiceUtil {
         }
 
         return s.substring(0, max - 1) + ".";
+    }
+
+    private static Font createUnicodeFont(float size, int style) {
+        try {
+            BaseFont baseFont = BaseFont.createFont(
+                    "C:/Windows/Fonts/arial.ttf",
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED
+            );
+            return new Font(baseFont, size, style);
+        } catch (Exception e) {
+            return FontFactory.getFont(FontFactory.HELVETICA, size, style);
+        }
     }
 }

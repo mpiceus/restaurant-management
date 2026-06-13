@@ -14,6 +14,10 @@ public class UserController {
         return userService.getAll();
     }
 
+    public User getById(int userId) {
+        return userService.getById(userId);
+    }
+
     public void create(String username, String password, Role role, String fullName) throws ServiceException {
         userService.create(username, password, role, fullName);
     }

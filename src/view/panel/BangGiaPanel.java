@@ -2,22 +2,23 @@ package view.panel;
 
 import controller.BangGiaController;
 import controller.MonAnController;
-import model.BangGia;
-import model.MonAnWithPriceDTO;
-import service.ServiceException;
-import view.dialog.BangGiaFormDialog;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import model.BangGia;
+import model.MonAnWithPriceDTO;
+import service.ServiceException;
+import util.RoundedButtonUI;
+import util.ScrollUtils;
+import util.UITheme;
+import view.dialog.BangGiaFormDialog;
 
-/**
- * Chỉ ADMIN dùng.
- */
 public class BangGiaPanel extends JPanel {
     private final BangGiaController controller = new BangGiaController();
     private final MonAnController monAnController = new MonAnController();
@@ -31,34 +32,85 @@ public class BangGiaPanel extends JPanel {
     public BangGiaPanel() {
         setLayout(new BorderLayout(8, 8));
 
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Mon ID", "Tên món", "Giá", "Ngày áp dụng"}, 0) {
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Món ID", "Tên món", "Giá", "Ngày áp dụng"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         table = new JTable(tableModel);
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        table.setRowHeight(32);
+        table.setFont(table.getFont().deriveFont(16f));
+        table.setBackground(UITheme.SAND);
+        table.setOpaque(true);
+        table.setForeground(Color.DARK_GRAY);
+        table.setSelectionBackground(UITheme.SAND.darker());
+        table.setSelectionForeground(Color.BLACK);
+        table.getTableHeader().setBackground(UITheme.COFFEE);
+        table.getTableHeader().setOpaque(true);
+        table.getTableHeader().setForeground(Color.DARK_GRAY);
+        table.getTableHeader().setFont(table.getTableHeader().getFont().deriveFont(Font.BOLD, 15f));
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.getViewport().setBackground(UITheme.SAND);
+        scrollPane.setBackground(UITheme.SAND);
+
+        add(scrollPane, BorderLayout.CENTER);
+
+        configureColumns();
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = new JButton("Reset");
         JButton btnAdd = new JButton("Thêm");
-        JButton btnEdit = new JButton("Sửa");
-        JButton btnDelete = new JButton("Xóa");
+        //JButton btnEdit = new JButton("Sửa");
+        //JButton btnDelete = new JButton("Xóa");
+
+        btnRefresh.setUI(new RoundedButtonUI());
+        btnRefresh.setBackground(UITheme.LATTE);
+        btnRefresh.setForeground(Color.WHITE);
+
+        btnAdd.setUI(new RoundedButtonUI());
+        btnAdd.setBackground(UITheme.CARAMEL);
+        btnAdd.setForeground(Color.WHITE);
+
+        /*btnEdit.setUI(new RoundedButtonUI());
+        btnEdit.setBackground(UITheme.CARAMEL);
+        btnEdit.setForeground(Color.WHITE);*/
+
+       /*btnDelete.setUI(new RoundedButtonUI());
+        btnDelete.setBackground(UITheme.CARAMEL);
+        btnDelete.setForeground(Color.WHITE);*/
 
         btnRefresh.addActionListener(e -> loadData());
         btnAdd.addActionListener(e -> onAdd());
-        btnEdit.addActionListener(e -> onEdit());
-        btnDelete.addActionListener(e -> onDelete());
+        //btnEdit.addActionListener(e -> onEdit());
+        //btnDelete.addActionListener(e -> onDelete());
 
         bottom.add(btnRefresh);
         bottom.add(btnAdd);
-        bottom.add(btnEdit);
-        bottom.add(btnDelete);
+        //bottom.add(btnEdit);
+        //bottom.add(btnDelete);
 
         add(bottom, BorderLayout.SOUTH);
 
+        ScrollUtils.apply(this);
         loadData();
+    }
+
+    private void configureColumns() {
+        centerAndNarrow(table.getColumnModel().getColumn(0), 48);
+        centerAndNarrow(table.getColumnModel().getColumn(1), 60);
+        table.getColumnModel().getColumn(2).setPreferredWidth(220);
+        table.getColumnModel().getColumn(3).setPreferredWidth(120);
+        table.getColumnModel().getColumn(4).setPreferredWidth(140);
+    }
+
+    private void centerAndNarrow(TableColumn column, int width) {
+        column.setPreferredWidth(width);
+        column.setMinWidth(Math.max(36, width - 8));
+        column.setMaxWidth(width + 8);
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.CENTER);
+        column.setCellRenderer(renderer);
     }
 
     private void loadMonMap() {
@@ -106,7 +158,7 @@ public class BangGiaPanel extends JPanel {
         }
     }
 
-    private void onEdit() {
+    /*private void onEdit() {
         Integer bangGiaId = getSelectedBangGiaId();
         if (bangGiaId == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 dòng bảng giá để sửa.");
@@ -131,9 +183,9 @@ public class BangGiaPanel extends JPanel {
         } catch (ServiceException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }*/
 
-    private void onDelete() {
+    /*private void onDelete() {
         Integer bangGiaId = getSelectedBangGiaId();
         if (bangGiaId == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn 1 dòng bảng giá để xóa.");
@@ -150,6 +202,5 @@ public class BangGiaPanel extends JPanel {
         } catch (ServiceException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }*/
 }
-
