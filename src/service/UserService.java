@@ -13,6 +13,10 @@ public class UserService {
         return userDAO.findAll();
     }
 
+    public User getById(int userId) {
+        return userDAO.findById(userId);
+    }
+
     public void create(String username, String password, Role role, String fullName) throws ServiceException {
         if (username == null || username.trim().isEmpty()) {
             throw new ServiceException("Username không được để trống.");

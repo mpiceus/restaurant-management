@@ -18,7 +18,7 @@ public class BanFormDialog extends JDialog {
 
     private boolean saved = false;
     private final JTextField txtTenBan = new JTextField();
-    private final JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"TRONG", "DANG_PHUC_VU"});
+    private final JComboBox<String> cbTrangThai = new JComboBox<>(new String[]{"TRỐNG", "ĐANG PHỤC VỤ"});
 
     public BanFormDialog(Window parent, InitialData initial) {
         super(parent, ModalityType.APPLICATION_MODAL);
@@ -28,9 +28,9 @@ public class BanFormDialog extends JDialog {
 
         if (initial != null) {
             txtTenBan.setText(initial.tenBan);
-            cbTrangThai.setSelectedItem(initial.trangThai);
+            cbTrangThai.setSelectedItem("ĐANG PHỤC VỤ".equalsIgnoreCase(initial.trangThai) ? "ĐANG PHỤC VỤ" : "TRỐNG");
         } else {
-            cbTrangThai.setSelectedItem("TRONG");
+            cbTrangThai.setSelectedItem("TRỐNG");
         }
 
         buildUI();
@@ -75,7 +75,10 @@ public class BanFormDialog extends JDialog {
     }
 
     public String getTrangThai() {
-        return String.valueOf(cbTrangThai.getSelectedItem());
+        String value = String.valueOf(cbTrangThai.getSelectedItem());
+        if ("ĐANG PHỤC VỤ".equalsIgnoreCase(value)) {
+            return "DANG_PHUC_VU";
+        }
+        return "TRONG";
     }
 }
-

@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.text.*;
 import util.MoneyUtils;
+import util.ScrollUtils;
 import util.UITheme;
 
 public class InvoicePaperPanel extends JPanel {
@@ -64,6 +65,8 @@ public class InvoicePaperPanel extends JPanel {
         scroll.getViewport().setBackground(UITheme.BEIGE);
         scroll.setBorder(null);
         add(scroll, BorderLayout.CENTER);
+
+        ScrollUtils.apply(this);
     }
 
     public void setData(String maHoaDonOrNull,

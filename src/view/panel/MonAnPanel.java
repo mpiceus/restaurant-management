@@ -14,6 +14,9 @@ import model.MonAnWithPriceDTO;
 import service.ServiceException;
 import util.ImageUtils;
 import util.MoneyUtils;
+import util.RoundedButtonUI;
+import util.RoundedPanel;
+import util.ScrollUtils;
 import util.UITheme;
 import view.common.WrapLayout;
 import view.dialog.MonAnFormDialog;
@@ -48,25 +51,36 @@ public class MonAnPanel extends JPanel {
         add(buildBottom(), BorderLayout.SOUTH);
 
         loadLoai();
+        ScrollUtils.apply(this);
         loadData(null, null, null);
     }
 
     private JPanel buildTop() {
-        JPanel p = new JPanel(new GridLayout(2, 4, 8, 8));
+        JPanel p = new RoundedPanel(18);
+        p.setLayout(new GridLayout(2, 4, 8, 8));
         p.setBackground(UITheme.BEIGE);
-        p.setBorder(BorderFactory.createTitledBorder("Tim kiem"));
+        p.setBorder(BorderFactory.createEmptyBorder(20, 12, 12, 12));
+        JLabel lblTitle = new JLabel("Tìm kiếm");
+        lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD, 14f));
 
-        p.add(new JLabel("Tu khoa (ten):"));
+        p.add(new JLabel("Từ khóa (tên):"));
         p.add(txtKeyword);
 
-        p.add(new JLabel("Loai:"));
+        p.add(new JLabel("Loại:"));
         p.add(cbLoai);
 
-        p.add(new JLabel("Mon ID:"));
+        p.add(new JLabel("Món ID:"));
         p.add(txtMonId);
 
-        JButton btnSearch = new JButton("Tim");
+        JButton btnSearch = new JButton("Tìm");
+        btnSearch.setUI(new RoundedButtonUI());
+        btnSearch.setBackground(UITheme.CARAMEL);
+        btnSearch.setForeground(Color.WHITE);
+
         JButton btnReset = new JButton("Reset");
+        btnReset.setUI(new RoundedButtonUI());
+        btnReset.setBackground(UITheme.LATTE);
+        btnReset.setForeground(Color.WHITE);
 
         btnSearch.addActionListener(e -> onSearch());
         btnReset.addActionListener(e -> {
@@ -87,14 +101,27 @@ public class MonAnPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
         p.setBackground(UITheme.BEIGE);
 
-        JButton btnRefresh = new JButton("Lam moi");
+        JButton btnRefresh = new JButton("Reset");
+        btnRefresh.setUI(new RoundedButtonUI());
+        btnRefresh.setBackground(UITheme.LATTE);
+        btnRefresh.setForeground(Color.WHITE);
+
         btnRefresh.addActionListener(e -> loadData(null, null, null));
         p.add(btnRefresh);
 
         if (editable) {
-            JButton btnAdd = new JButton("Them");
-            JButton btnEdit = new JButton("Sua");
-            JButton btnDelete = new JButton("Xoa");
+            JButton btnAdd = new JButton("Thêm");
+            btnAdd.setUI(new RoundedButtonUI());
+            btnAdd.setBackground(UITheme.CARAMEL);
+            btnAdd.setForeground(Color.WHITE);
+            JButton btnEdit = new JButton("Sửa");
+            btnEdit.setUI(new RoundedButtonUI());
+            btnEdit.setBackground(UITheme.CARAMEL);
+            btnEdit.setForeground(Color.WHITE);
+            JButton btnDelete = new JButton("Xóa");
+            btnDelete.setUI(new RoundedButtonUI());
+            btnDelete.setBackground(UITheme.CARAMEL);
+            btnDelete.setForeground(Color.WHITE);
 
             btnAdd.addActionListener(e -> onAdd());
             btnEdit.addActionListener(e -> onEdit());
@@ -109,7 +136,7 @@ public class MonAnPanel extends JPanel {
 
     private void loadLoai() {
         cbLoai.removeAllItems();
-        cbLoai.addItem(new LoaiMonAn(0, "Tat ca"));
+        cbLoai.addItem(new LoaiMonAn(0, "Tất cả"));
         List<LoaiMonAn> loaiList = loaiController.getAll();
         for (LoaiMonAn l : loaiList) {
             cbLoai.addItem(l);
@@ -165,10 +192,11 @@ public class MonAnPanel extends JPanel {
     private JPanel buildMonCard(MonAnWithPriceDTO m) {
         boolean isHet = "HET".equalsIgnoreCase(String.valueOf(m.getTrangThai()));
 
-        JPanel card = new JPanel();
+        RoundedPanel card = new RoundedPanel(18);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1, true));
-        card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.BEIGE);
+        //card.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1, true));
+        card.setBorder(null);
+        card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.SAND);
         card.setPreferredSize(new Dimension(210, 260));
         card.putClientProperty("monId", m.getMonId());
 
@@ -253,7 +281,7 @@ public class MonAnPanel extends JPanel {
                 if (selectedMonId != null && selectedMonId.equals(m.getMonId())) {
                     return;
                 }
-                card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.BEIGE);
+                card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.SAND);
             }
         });
 
@@ -265,19 +293,35 @@ public class MonAnPanel extends JPanel {
             if (!(c instanceof JPanel)) {
                 continue;
             }
+
             JPanel card = (JPanel) c;
+
             Object id = card.getClientProperty("monId");
-            boolean isSelected = id instanceof Integer && id.equals(selectedMonId);
-            MonAnWithPriceDTO m = (id instanceof Integer) ? monById.get((Integer) id) : null;
-            boolean isHet = m != null && "HET".equalsIgnoreCase(String.valueOf(m.getTrangThai()));
+
+            boolean isSelected = id instanceof Integer 
+                    && id.equals(selectedMonId);
+
+            MonAnWithPriceDTO m = (id instanceof Integer)
+                    ? monById.get((Integer) id)
+                    : null;
+
+            boolean isHet = m != null 
+                    && "HET".equalsIgnoreCase(String.valueOf(m.getTrangThai()));
+
             if (isSelected) {
-                card.setBackground(isHet ? new Color(0xDADADA) : new Color(0xE2D6C0));
+                // Được chọn
+                card.setBackground(isHet 
+                        ? new Color(0xDADADA) 
+                        : UITheme.CARAMEL);
+
             } else {
-                card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.BEIGE);
+                // Bình thường
+                card.setBackground(isHet 
+                        ? new Color(0xEEEEEE) 
+                        : UITheme.SAND);
             }
         }
     }
-
     private ImageIcon tryLoadMonImage(String imagePath, int size) {
         if (imagePath == null || imagePath.isBlank()) {
             return null;

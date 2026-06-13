@@ -1,17 +1,20 @@
 package dao;
 
-import model.Ban;
-import util.DBConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import model.Ban;
+import util.DBConnection;
 
-public class BanDAO {
+public class BanDAO extends BaseDAO<Ban> {
 
+    public BanDAO(){
+        super("Ban");
+    }
+    
     public List<Ban> findAll() {
         String sql = "SELECT ban_id, ten_ban, trang_thai FROM Ban ORDER BY ban_id DESC";
         List<Ban> list = new ArrayList<>();
@@ -43,6 +46,7 @@ public class BanDAO {
         return null;
     }
 
+    @Override
     public int insert(Ban ban) throws Exception {
         String sql = "INSERT INTO Ban(ten_ban, trang_thai) VALUES (?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -56,9 +60,10 @@ public class BanDAO {
                 }
             }
         }
-        throw new Exception("KhÃ´ng láº¥y Ä‘Æ°á»£c ban_id sau khi insert Ban.");
+        throw new Exception("Không lấy được ban_id sau khi insert Bàn.");
     }
 
+    @Override
     public void update(Ban ban) throws Exception {
         String sql = "UPDATE Ban SET ten_ban = ?, trang_thai = ? WHERE ban_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -80,6 +85,7 @@ public class BanDAO {
         }
     }
 
+    @Override
     public void delete(int banId) throws Exception {
         String sql = "DELETE FROM Ban WHERE ban_id = ?";
         try (Connection conn = DBConnection.getConnection();

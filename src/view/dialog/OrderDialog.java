@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import model.ChiTietBanDTO;
 import model.LoaiMonAn;
 import model.MonAnWithPriceDTO;
@@ -21,6 +22,9 @@ import service.ServiceException;
 import util.ImageUtils;
 import util.MoneyUtils;
 import util.PDFInvoiceUtil;
+import util.RoundedButtonUI;
+import util.RoundedPanel;
+import util.ScrollUtils;
 import util.Session;
 import util.UITheme;
 import view.common.InvoicePaperPanel;
@@ -36,8 +40,8 @@ public class OrderDialog extends JDialog {
     private boolean daThanhToan = false;
     private List<InvoicePaperPanel.LineItem> currentInvoiceItems;
     private final JLabel lblVat = new JLabel("VAT (8%): 0 VND");
-    private final JLabel lblSvc = new JLabel("Phi dich vu (15%): 0 VND");
-    private final JLabel lblTongCong = new JLabel("Tong cong: 0 VND");
+    private final JLabel lblSvc = new JLabel("Phí dịch vụ (15%): 0 VND");
+    private final JLabel lblTongCong = new JLabel("Tổng cộng: 0 VND");
 
     private final ChiTietBanController chiTietBanController = new ChiTietBanController();
     private final MonAnController monAnController = new MonAnController();
@@ -56,7 +60,7 @@ public class OrderDialog extends JDialog {
     private DefaultTableModel orderModel;
     private JTable orderTable;
     private final JLabel lblTongTien = new JLabel("0");
-    private final JButton btnThanhToan = new JButton("Thanh toan");
+    private final JButton btnThanhToan = new JButton("Thanh toán");
 
     // Checkout UI
     private final InvoicePaperPanel invoicePanel = new InvoicePaperPanel();
@@ -74,21 +78,21 @@ public class OrderDialog extends JDialog {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Ban nay dang duoc nhan vien khac phuc vu."
+                    "Bàn này đang được nhân viên khác phục vụ."
             );
 
             dispose();
             return;
         }
 
-        setTitle("Order - " + tenBan);
+        setTitle("Đặt món - " + tenBan);
         setSize(1200, 650);
         setLocationRelativeTo(parent);
         getContentPane().setBackground(UITheme.BEIGE);
         setLayout(new BorderLayout(8, 8));
 
         orderModel = new DefaultTableModel(new Object[]{
-                "CTID", "MONID", "TEN", "DON_GIA", "SL", "THANH_TIEN", "+", "-", "HUY"
+                "CTID", "MONID", "Món", "Đơn giá", "SL", "Thành tiền", "+", "-", "Hủy"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -96,23 +100,92 @@ public class OrderDialog extends JDialog {
             }
         };
         orderTable = new JTable(orderModel);
+        orderTable.setRowHeight(34);
+        orderTable.setFont(orderTable.getFont().deriveFont(15f));
+        orderTable.getTableHeader().setFont(orderTable.getTableHeader().getFont().deriveFont(Font.BOLD, 14f));
+        orderTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        setWidth(0, 0);   // CTID
+        setWidth(1, 0);   // MONID
 
+        setWidth(2, 140); // Món
+        setWidth(3, 90);  // Đơn giá
+        setWidth(4, 30);  // SL
+        setWidth(5, 95); // Thành tiền
+
+        setWidth(6, 45);  // +
+        setWidth(7, 45);  // -
+        setWidth(8, 70);  // Hủy
         // Hide CTID + MONID
         hideColumn(0);
         hideColumn(1);
 
-        orderTable.getColumn("+").setCellRenderer(new TableButtonRenderer());
-        orderTable.getColumn("+").setCellEditor(new TableButtonEditor("+", this::onPlusRow));
-        orderTable.getColumn("-").setCellRenderer(new TableButtonRenderer());
-        orderTable.getColumn("-").setCellEditor(new TableButtonEditor("-", this::onMinusRow));
-        orderTable.getColumn("HUY").setCellRenderer(new TableButtonRenderer());
-        orderTable.getColumn("HUY").setCellEditor(new TableButtonEditor("Huy", this::onHuyRow));
+        orderTable.getColumn("+")
+                .setCellRenderer(
+                    new TableButtonRenderer(UITheme.SUCCESS)
+                );
+
+        orderTable.getColumn("+")
+                .setCellEditor(
+                    new TableButtonEditor(
+                        "+",
+                        UITheme.SUCCESS,
+                        this::onPlusRow
+                    )
+                );
+
+
+        orderTable.getColumn("-")
+                .setCellRenderer(
+                    new TableButtonRenderer(UITheme.COFFEE)
+                );
+
+        orderTable.getColumn("-")
+                .setCellEditor(
+                    new TableButtonEditor(
+                        "-",
+                        UITheme.COFFEE,
+                        this::onMinusRow
+                    )
+                );
+
+
+        orderTable.getColumn("Hủy")
+                .setCellRenderer(
+                    new TableButtonRenderer(UITheme.DANGER)
+                );
+
+        orderTable.getColumn("Hủy")
+                .setCellEditor(
+                    new TableButtonEditor(
+                        "Hủy",
+                        UITheme.DANGER,
+                        this::onHuyRow
+                    )
+                );
+        //Resét độ rộngg 
+        TableColumn plusCol = orderTable.getColumn("+");
+        plusCol.setPreferredWidth(45);
+        plusCol.setMinWidth(40);
+        plusCol.setMaxWidth(50);
+
+        TableColumn minusCol = orderTable.getColumn("-");
+        minusCol.setPreferredWidth(45);
+        minusCol.setMinWidth(40);
+        minusCol.setMaxWidth(50);
+
+        TableColumn huyCol = orderTable.getColumn("Hủy");
+        huyCol.setPreferredWidth(60);
+        huyCol.setMinWidth(55);
+        huyCol.setMaxWidth(70);
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, buildLeftSide(), buildRightSide());
         split.setDividerLocation(650);
         add(split, BorderLayout.CENTER);
 
-        JButton btnClose = new JButton("Dong");
+        JButton btnClose = new JButton("Đóng");
+        btnClose.setUI(new RoundedButtonUI());
+        btnClose.setBackground(UITheme.LATTE);
+        btnClose.setForeground(Color.WHITE);
         btnClose.addActionListener(e -> dispose());
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottom.setBackground(UITheme.BEIGE);
@@ -122,6 +195,7 @@ public class OrderDialog extends JDialog {
         loadLoaiButtons();
         refreshDishGrid();
         refreshOrder();
+        ScrollUtils.apply(this);
         
     }
 
@@ -157,8 +231,16 @@ public class OrderDialog extends JDialog {
         JPanel search = new JPanel(new BorderLayout(6, 6));
         search.setBackground(UITheme.BEIGE);
         txtSearch.addActionListener(e -> refreshDishGrid());
-        JButton btnSearch = new JButton("Tim");
+
+        JLabel lblKeyword = new JLabel("Từ khóa (tên):");
+        JButton btnSearch = new JButton("Tìm");
+
+        btnSearch.setUI(new RoundedButtonUI());
+        btnSearch.setBackground(UITheme.CARAMEL);
+        btnSearch.setForeground(Color.WHITE);
+
         btnSearch.addActionListener(e -> refreshDishGrid());
+        search.add(lblKeyword, BorderLayout.WEST);
         search.add(txtSearch, BorderLayout.CENTER);
         search.add(btnSearch, BorderLayout.EAST);
         top.add(search, BorderLayout.SOUTH);
@@ -192,7 +274,7 @@ public class OrderDialog extends JDialog {
 
         JPanel rowTong = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         rowTong.setBackground(UITheme.BEIGE);
-        rowTong.add(new JLabel("Tong tien hang: "));
+        rowTong.add(new JLabel("Tổng tiền hàng: "));
         rowTong.add(lblTongTien);
         rowTong.add(new JLabel(" VND"));
 
@@ -221,9 +303,12 @@ public class OrderDialog extends JDialog {
         bottom.add(left, BorderLayout.WEST);
 
         // ===== BUTTON =====
+        btnThanhToan.setUI(new RoundedButtonUI());
+        btnThanhToan.setBackground(UITheme.CARAMEL);
+        btnThanhToan.setForeground(Color.WHITE);
         btnThanhToan.addActionListener(e -> onThanhToan());
         btnThanhToan.setFocusPainted(false);
-        btnThanhToan.setPreferredSize(new Dimension(140, 42));
+        btnThanhToan.setPreferredSize(new Dimension(50, 20));
         btnThanhToan.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnThanhToan.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         bottom.add(btnThanhToan, BorderLayout.EAST);
@@ -254,8 +339,8 @@ public class OrderDialog extends JDialog {
             BigDecimal total = tong.add(vat).add(svc);
 
             lblVat.setText("VAT (8%): " + MoneyUtils.formatVnd(vat) + " VND");
-            lblSvc.setText("Phi dich vu (15%): " + MoneyUtils.formatVnd(svc) + " VND");
-            lblTongCong.setText("Tong cong: " + MoneyUtils.formatVnd(total) + " VND");
+            lblSvc.setText("Phí dịch vụ (15%): " + MoneyUtils.formatVnd(svc) + " VND");
+            lblTongCong.setText("Tổng cộng: " + MoneyUtils.formatVnd(total) + " VND");
         });
 
         return root;
@@ -268,7 +353,10 @@ public class OrderDialog extends JDialog {
         }
         categories.removeAll();
 
-        JButton all = new JButton("ALL");
+        JButton all = new JButton("Tất cả");
+        all.setUI(new RoundedButtonUI());
+        all.setBackground(UITheme.LATTE);
+        all.setForeground(Color.WHITE);
         all.addActionListener(e -> {
             selectedLoaiId = null;
             refreshDishGrid();
@@ -278,6 +366,9 @@ public class OrderDialog extends JDialog {
         List<LoaiMonAn> list = loaiMonAnController.getAll();
         for (LoaiMonAn l : list) {
             JButton b = new JButton(l.getTenLoai());
+            b.setUI(new RoundedButtonUI());
+            b.setBackground(UITheme.CARAMEL);
+            b.setForeground(Color.WHITE);
             b.addActionListener(e -> {
                 selectedLoaiId = l.getLoaiId();
                 refreshDishGrid();
@@ -303,21 +394,27 @@ public class OrderDialog extends JDialog {
     private JPanel buildDishCard(MonAnWithPriceDTO m) {
         boolean isHet = "HET".equalsIgnoreCase(String.valueOf(m.getTrangThai()));
 
-        JPanel card = new JPanel();
+        RoundedPanel card = new RoundedPanel(18);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1, true));
-        card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.BEIGE);
-        card.setPreferredSize(new Dimension(140, 190));
+        card.setBorder(null);
+        card.setBackground(isHet ? new Color(0xEEEEEE) : UITheme.SAND);
+        card.setPreferredSize(new Dimension(170, 220));
+        card.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JPanel img = new JPanel(new BorderLayout());
         img.setPreferredSize(new Dimension(120, 120));
         img.setMaximumSize(new Dimension(120, 120));
-        img.setBackground(isHet ? new Color(0xDDDDDD) : Color.WHITE);
-        img.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        img.setAlignmentX(Component.CENTER_ALIGNMENT);
+        img.setOpaque(false);
 
         JLabel imgLabel = new JLabel("", SwingConstants.CENTER);
+        imgLabel.setPreferredSize(new Dimension(120, 120));
+        imgLabel.setMinimumSize(new Dimension(120, 120));
+        imgLabel.setMaximumSize(new Dimension(120, 120));
         imgLabel.setOpaque(false);
-        ImageIcon icon = tryLoadMonImage(m.getMonId(), 120);
+        imgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imgLabel.setVerticalAlignment(SwingConstants.CENTER);
+        ImageIcon icon = tryLoadMonImage(m.getHinhAnh(), 120);
         if (icon != null) {
             imgLabel.setIcon(icon);
             imgLabel.setText("");
@@ -329,10 +426,12 @@ public class OrderDialog extends JDialog {
         JLabel ten = new JLabel(String.valueOf(m.getTenMon()).toUpperCase());
         JLabel gia = new JLabel(MoneyUtils.formatVnd(m.getGia()) + " VND");
 
-        ten.setAlignmentX(Component.LEFT_ALIGNMENT);
-        gia.setAlignmentX(Component.LEFT_ALIGNMENT);
+        ten.setAlignmentX(Component.CENTER_ALIGNMENT);
+        gia.setAlignmentX(Component.CENTER_ALIGNMENT);
         ten.setBorder(BorderFactory.createEmptyBorder(6, 8, 0, 8));
         gia.setBorder(BorderFactory.createEmptyBorder(2, 8, 8, 8));
+        ten.setHorizontalAlignment(SwingConstants.CENTER);
+        gia.setHorizontalAlignment(SwingConstants.CENTER);
 
         if (isHet) {
             ten.setForeground(Color.GRAY);
@@ -341,7 +440,7 @@ public class OrderDialog extends JDialog {
         }
 
         card.add(Box.createVerticalStrut(8));
-        img.setAlignmentX(Component.LEFT_ALIGNMENT);
+        img.setAlignmentX(Component.CENTER_ALIGNMENT);
         card.add(img);
         card.add(ten);
         card.add(gia);
@@ -370,7 +469,7 @@ public class OrderDialog extends JDialog {
 
                 @Override
                 public void mouseExited(java.awt.event.MouseEvent e) {
-                    card.setBackground(UITheme.BEIGE);
+                    card.setBackground(UITheme.SAND);
                 }
             });
         } else {
@@ -380,7 +479,46 @@ public class OrderDialog extends JDialog {
         return card;
     }
 
-    private ImageIcon tryLoadMonImage(int monId, int size) {
+    private ImageIcon tryLoadMonImage(String imagePath, int size) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return null;
+        }
+
+        File f = new File(imagePath);
+        if (!f.exists()) {
+            return null;
+        }
+
+        return ImageUtils.loadSquareIcon(imagePath, size);
+    }
+
+    private void configureOrderColumns() {
+        orderTable.setRowHeight(34);
+        orderTable.setFont(orderTable.getFont().deriveFont(15f));
+        orderTable.getTableHeader().setFont(orderTable.getTableHeader().getFont().deriveFont(Font.BOLD, 14f));
+
+        orderTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        setWidth(0,0);
+        setWidth(1,0);
+
+        setWidth(2,220); // Món
+        setWidth(3,90);  // Đơn giá
+        setWidth(4,40);  // SL
+        setWidth(5,120); // Thành tiền
+        setWidth(6,45);  // +
+        setWidth(7,45);  // -
+        setWidth(8,70);  // Hủy
+    }
+
+    private void setWidth(int viewColumnIndex, int width) {
+        TableColumn col = orderTable.getColumnModel().getColumn(viewColumnIndex);
+        col.setPreferredWidth(width);
+        col.setMinWidth(width);
+        col.setMaxWidth(width);
+    }
+
+    private ImageIcon tryLoadMonImageFallback(int monId, int size) {
         String base = "assets/monan/" + monId;
         String[] exts = new String[]{".jpg", ".jpeg", ".png"};
         for (String ext : exts) {
@@ -416,7 +554,7 @@ public class OrderDialog extends JDialog {
                     MoneyUtils.formatVnd(thanhTien),
                     "+",
                     "-",
-                    "Huy"
+                    "Hủy"
             });
         }
 
@@ -462,7 +600,7 @@ public class OrderDialog extends JDialog {
 
     private void onHuyRow(int row) {
         int chiTietBanId = (Integer) orderModel.getValueAt(row, 0);
-        int confirm = JOptionPane.showConfirmDialog(this, "Huy mon nay?", "Xac nhan", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Hủy món này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) {
             return;
         }
@@ -569,7 +707,7 @@ public class OrderDialog extends JDialog {
 
         private final JTextArea summary = new JTextArea();
         private final JButton btnHoanThanh = new JButton("Hoan thanh");
-        private final JButton btnExportPdf = new JButton("Xuat PDF");
+        private final JButton btnExportPdf = new JButton("Xuất PDF");
 
         public CheckoutSummaryPanel() {
             setLayout(new BorderLayout(8, 8));
@@ -615,7 +753,7 @@ public class OrderDialog extends JDialog {
         public void setData(String tenBan, List<ChiTietBanDTO> items, Map<Integer, MonAnWithPriceDTO> monById) {
             BigDecimal tong = BigDecimal.ZERO;
             StringBuilder sb = new StringBuilder();
-            sb.append("BAN: ").append(tenBan).append("\n\n");
+            sb.append("BÀN: ").append(tenBan).append("\n\n");
             for (ChiTietBanDTO it : items) {
                 MonAnWithPriceDTO mon = monById.get(it.getMonId());
                 BigDecimal donGia = mon == null ? BigDecimal.ZERO : (mon.getGia() == null ? BigDecimal.ZERO : mon.getGia());
@@ -629,8 +767,8 @@ public class OrderDialog extends JDialog {
             BigDecimal total = tong.add(vat).add(svc);
             sb.append("Tong thanh tien: ").append(MoneyUtils.formatVnd(tong)).append("\n");
             sb.append("VAT 8%: ").append(MoneyUtils.formatVnd(vat)).append("\n");
-            sb.append("Phi dich vu 15%: ").append(MoneyUtils.formatVnd(svc)).append("\n");
-            sb.append("Tong cong: ").append(MoneyUtils.formatVnd(total)).append("\n");
+            sb.append("Phí dịch vụ 15%: ").append(MoneyUtils.formatVnd(svc)).append("\n");
+            sb.append("Tổng cộng: ").append(MoneyUtils.formatVnd(total)).append("\n");
             summary.setText(sb.toString());
             summary.setCaretPosition(0);
         }

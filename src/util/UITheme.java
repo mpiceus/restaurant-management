@@ -1,8 +1,8 @@
 package util;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.plaf.ColorUIResource;
-import java.awt.*;
 
 public final class UITheme {
     private UITheme() {
@@ -12,9 +12,29 @@ public final class UITheme {
     public static final Color BEIGE_2 = new Color(0xEFE7DA);
     public static final Color TEXT = Color.BLACK;
     public static final Color BORDER = new Color(0xD6CBB8);
+    
+    public static final Color COFFEE_DARK = new Color(0x5D4037);
+    public static final Color COFFEE = new Color(0x795548);
+    public static final Color LATTE = new Color(0xA1887F);
+    public static final Color CREAM = new Color(0xEFEBE9);
+    public static final Color CARAMEL = new Color(0xBC8F5A);
+
+    public static final Color SIDEBAR = new Color(0x4E342E);   // Espresso
+
+    public static final Color SIDEBAR_HOVER = new Color(0x6D4C41);
+
+    public static final Color SIDEBAR_SELECTED = new Color(0xD4A373);   // Caramel
+
+    public static final Color SIDEBAR_TEXT = Color.WHITE;
+
+    public static final Color SAND = new Color(0xDBCFB8);
+
+    public static final Color SUCCESS = new Color(0x6FAF7B);
+    public static final Color DANGER = new Color(0xB85C5C);
 
     public static void apply() {
         applyFontScale(14f);
+        UIManager.put("ButtonUI", RoundedButtonUI.class.getName());
 
         // Base
         putColor("Panel.background", BEIGE);

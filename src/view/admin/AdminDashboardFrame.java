@@ -1,7 +1,10 @@
 package view.admin;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
+import util.RoundedButtonUI;
 import util.Session;
 import util.UITheme;
 import view.LoginFrame;
@@ -10,9 +13,10 @@ import view.panel.*;
 public class AdminDashboardFrame extends JFrame {
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel content = new JPanel(cardLayout);
+    private final List<JButton> navButtons = new ArrayList<>();
 
     public AdminDashboardFrame() {
-        setTitle("Dashboard ADMIN - Quan ly nha hang");
+        setTitle("Dashboard ADMIN - Quản lý nhà hàng");
         setSize(1100, 650);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -29,6 +33,7 @@ public class AdminDashboardFrame extends JFrame {
         add(buildSidebar(), BorderLayout.WEST);
 
         content.setBackground(UITheme.BEIGE);
+        content.add(new BaoCaoThongKePanel(), "BAOCAO");
         content.add(new MonAnPanel(true), "MONAN");
         content.add(new LoaiMonAnPanel(true), "LOAI");
         content.add(new BangGiaPanel(), "BANGGIA");
@@ -38,7 +43,7 @@ public class AdminDashboardFrame extends JFrame {
 
         add(content, BorderLayout.CENTER);
 
-        cardLayout.show(content, "MONAN");
+        cardLayout.show(content, "BAOCAO");
     }
 
     private JPanel buildSidebar() {
@@ -66,6 +71,8 @@ public class AdminDashboardFrame extends JFrame {
         top.add(user);
         top.add(Box.createVerticalStrut(16));
 
+        top.add(navButton("Báo cáo", "BAOCAO"));
+        top.add(Box.createVerticalStrut(6));
         top.add(navButton("Món ăn", "MONAN"));
         top.add(Box.createVerticalStrut(6));
         top.add(navButton("Loại món", "LOAI"));
@@ -78,6 +85,10 @@ public class AdminDashboardFrame extends JFrame {
         top.add(Box.createVerticalStrut(6));
         top.add(navButton("Nhân viên", "NHANVIEN"));
 
+        if (!navButtons.isEmpty()) {
+            navButtons.get(0).setBackground(UITheme.CARAMEL);
+        }
+
         side.add(top, BorderLayout.NORTH);
 
         JPanel bottom = new JPanel();
@@ -86,6 +97,9 @@ public class AdminDashboardFrame extends JFrame {
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
 
         JButton logout = new JButton("Đăng xuất");
+        logout.setUI(new RoundedButtonUI());
+        logout.setBackground(UITheme.LATTE);
+        logout.setForeground(Color.WHITE);
         logout.setAlignmentX(Component.LEFT_ALIGNMENT);
         logout.addActionListener(e -> {
             Session.clear();
@@ -99,13 +113,34 @@ public class AdminDashboardFrame extends JFrame {
     }
 
     private JButton navButton(String label, String card) {
+
         JButton b = new JButton(label);
+
         b.setHorizontalAlignment(SwingConstants.LEFT);
         b.setFocusPainted(false);
-        b.setBackground(UITheme.BEIGE);
-        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-        b.addActionListener(e -> cardLayout.show(content, card));
+        b.setBackground(UITheme.SIDEBAR);
+        b.setForeground(UITheme.SIDEBAR_TEXT);
+        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        //b.setMargin(new Insets(0, 14, 0, 0));
+        b.setUI(new RoundedButtonUI());
+
+        navButtons.add(b);
+
+        b.addActionListener(e -> {
+
+            cardLayout.show(content, card);
+
+            // reset toàn bộ menu
+            for (JButton btn : navButtons) {
+                btn.setBackground(UITheme.SIDEBAR);
+            }
+
+            // tô màu menu đang chọn
+            b.setBackground(UITheme.CARAMEL);
+
+            content.repaint();
+        });
+
         return b;
     }
 }
-

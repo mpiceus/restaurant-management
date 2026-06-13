@@ -1,25 +1,29 @@
 package view.panel;
 
 import controller.BanController;
-import model.Ban;
-import service.ServiceException;
-import util.Session;
-import util.UITheme;
-import view.dialog.BanFormDialog;
-import view.dialog.OrderDialog;
-import view.common.WrapLayout;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.*;
+import model.Ban;
+import service.ServiceException;
+import util.RoundedButtonUI;
+import util.RoundedPanel;
+import util.ScrollUtils;
+import util.Session;
+import util.UITheme;
+import view.common.WrapLayout;
+import view.dialog.BanFormDialog;
+import view.dialog.OrderDialog;
 
 public class BanPanel extends JPanel {
     private final boolean adminMode;
     private final BanController banController = new BanController();
+    private final controller.ChiTietBanController chiTietBanController = new controller.ChiTietBanController();
+    private final controller.UserController userController = new controller.UserController();
 
-    private final JPanel grid = new JPanel(new WrapLayout(FlowLayout.LEFT, 12, 12));
+    private final JPanel grid = new JPanel(new WrapLayout(FlowLayout.LEFT, 16, 16));
     private Integer selectedBanId = null;
 
     public BanPanel(boolean adminMode) {
@@ -35,6 +39,7 @@ public class BanPanel extends JPanel {
 
         add(buildBottom(), BorderLayout.SOUTH);
 
+        ScrollUtils.apply(this);
         loadData();
     }
 
@@ -42,14 +47,23 @@ public class BanPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
         p.setBackground(UITheme.BEIGE);
 
-        JButton btnRefresh = new JButton("Lam moi");
+        JButton btnRefresh = new JButton("Tải lại");
         btnRefresh.addActionListener(e -> loadData());
         p.add(btnRefresh);
 
         if (adminMode) {
-            JButton btnAdd = new JButton("Them ban");
-            JButton btnEdit = new JButton("Sua ban");
-            JButton btnDelete = new JButton("Xoa ban");
+            JButton btnAdd = new JButton("Thêm");
+            btnAdd.setUI(new RoundedButtonUI());
+            btnAdd.setBackground(UITheme.CARAMEL);
+            btnAdd.setForeground(Color.WHITE);
+            JButton btnEdit = new JButton("Sửa");
+            btnEdit.setUI(new RoundedButtonUI());
+            btnEdit.setBackground(UITheme.CARAMEL);
+            btnEdit.setForeground(Color.WHITE);
+            JButton btnDelete = new JButton("Xóa");
+            btnDelete.setUI(new RoundedButtonUI());
+            btnDelete.setBackground(UITheme.CARAMEL);
+            btnDelete.setForeground(Color.WHITE);
 
             btnAdd.addActionListener(e -> onAdd());
             btnEdit.addActionListener(e -> onEdit());
@@ -58,11 +72,11 @@ public class BanPanel extends JPanel {
             p.add(btnAdd);
             p.add(btnEdit);
             p.add(btnDelete);
-        } else {
-            JButton btnUpdateStatus = new JButton("Cap nhat trang thai");
+        } /*else {
+            JButton btnUpdateStatus = new JButton("Cập nhật trạng thái");
             btnUpdateStatus.addActionListener(e -> onUpdateStatus());
             p.add(btnUpdateStatus);
-        }
+        }*/
 
         return p;
     }
@@ -81,22 +95,33 @@ public class BanPanel extends JPanel {
     }
 
     private JPanel buildBanCard(Ban b) {
-        JPanel card = new JPanel();
+        RoundedPanel card = new RoundedPanel(18);
         card.setLayout(new BorderLayout());
-        card.setPreferredSize(new Dimension(140, 140));
+        card.setPreferredSize(new Dimension(160, 160));
         card.setBackground(UITheme.BEIGE);
         card.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1, true));
         card.putClientProperty("banId", b.getBanId());
 
         JLabel name = new JLabel(String.valueOf(b.getTenBan()).toUpperCase(), SwingConstants.CENTER);
-        name.setFont(name.getFont().deriveFont(Font.BOLD, 14f));
-        name.setBorder(BorderFactory.createEmptyBorder(18, 8, 6, 8));
+        name.setFont(name.getFont().deriveFont(Font.BOLD, 15f));
+        name.setBorder(BorderFactory.createEmptyBorder(22, 8, 8, 8));
 
         String statusText = formatTrangThai(b.getTrangThai());
         JLabel status = new JLabel(statusText, SwingConstants.CENTER);
-        status.setFont(status.getFont().deriveFont(Font.PLAIN, 11.5f));
-        status.setBorder(BorderFactory.createEmptyBorder(0, 8, 18, 8));
+        status.setFont(status.getFont().deriveFont(Font.PLAIN, 12.5f));
+        status.setBorder(BorderFactory.createEmptyBorder(0, 8, 20, 8));
         status.setForeground("TRONG".equalsIgnoreCase(b.getTrangThai()) ? new Color(0x2E7D32) : new Color(0xC62828));
+        if ("DANG_PHUC_VU".equalsIgnoreCase(b.getTrangThai())) {
+            Integer servingUserId = chiTietBanController.getServingUserId(b.getBanId());
+            model.User servingUser = servingUserId == null ? null : userController.getById(servingUserId);
+            if (servingUser != null) {
+                String display = servingUser.getUsername();
+                if (servingUser.getFullName() != null && !servingUser.getFullName().trim().isEmpty()) {
+                    display += ". " + servingUser.getFullName().trim();
+                }
+                status.setText("<html>ĐANG PHỤC VỤ<br><b>" + display + "</b></html>");
+            }
+        }
 
         card.add(name, BorderLayout.CENTER);
         card.add(status, BorderLayout.SOUTH);
@@ -160,10 +185,10 @@ public class BanPanel extends JPanel {
             return "";
         }
         if ("TRONG".equalsIgnoreCase(s)) {
-            return "TRONG";
+            return "TRỐNG";
         }
         if ("DANG_PHUC_VU".equalsIgnoreCase(s)) {
-            return "DANG PHUC VU";
+            return "ĐANG PHỤC VỤ";
         }
         return s;
     }
@@ -178,13 +203,13 @@ public class BanPanel extends JPanel {
             banController.create(dialog.getTenBan(), dialog.getTrangThai());
             loadData();
         } catch (ServiceException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void onEdit() {
         if (selectedBanId == null) {
-            JOptionPane.showMessageDialog(this, "Vui long chon 1 ban de sua.");
+            JOptionPane.showMessageDialog(this, "Vui lòng chon 1 bàn để sửa.");
             return;
         }
 
@@ -227,7 +252,7 @@ public class BanPanel extends JPanel {
         }
     }
 
-    private void onUpdateStatus() {
+    /*private void onUpdateStatus() {
         if (selectedBanId == null) {
             JOptionPane.showMessageDialog(this, "Vui long chon 1 ban.");
             return;
@@ -249,5 +274,5 @@ public class BanPanel extends JPanel {
         } catch (ServiceException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Loi", JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }*/
 }

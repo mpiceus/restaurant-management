@@ -3,27 +3,21 @@ package view.dialog;
 import controller.ChiTietBanController;
 import controller.LoaiMonAnController;
 import controller.MonAnController;
+import java.awt.*;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import model.ChiTietBanDTO;
 import model.LoaiMonAn;
 import model.MonAnWithPriceDTO;
 import service.ServiceException;
+import util.ScrollUtils;
 import util.Session;
+import util.UITheme;
 import view.common.TableButtonEditor;
 import view.common.TableButtonRenderer;
 
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-
-/**
- * Order tạm (ChiTietBan) cho STAFF.
- * <p>
- * Chia 2 cột:
- * - Left: danh sách món đã gọi (của nhân viên hiện tại)
- * - Right: search + chọn món từ danh sách để thêm
- */
 public class ChiTietBanDialog extends JDialog {
     private final int banId;
     private final int userId;
@@ -34,7 +28,6 @@ public class ChiTietBanDialog extends JDialog {
 
     private final DefaultTableModel orderModel;
     private final JTable orderTable;
-
     private final DefaultTableModel monModel;
     private final JTable monTable;
 
@@ -61,12 +54,34 @@ public class ChiTietBanDialog extends JDialog {
             }
         };
         orderTable = new JTable(orderModel);
+        orderTable.setRowHeight(32);
+        orderTable.getColumn("Sửa")
+                .setCellRenderer(
+                        new TableButtonRenderer(UITheme.CARAMEL)
+                );
 
-        // Button columns
-        orderTable.getColumn("Sửa").setCellRenderer(new TableButtonRenderer());
-        orderTable.getColumn("Sửa").setCellEditor(new TableButtonEditor("Sửa", this::onEditOrderRow));
-        orderTable.getColumn("Xóa").setCellRenderer(new TableButtonRenderer());
-        orderTable.getColumn("Xóa").setCellEditor(new TableButtonEditor("Xóa", this::onDeleteOrderRow));
+        orderTable.getColumn("Sửa")
+                .setCellEditor(
+                        new TableButtonEditor(
+                                "Sửa",
+                                UITheme.CARAMEL,
+                                this::onEditOrderRow
+                        )
+                );
+
+        orderTable.getColumn("Xóa")
+                .setCellRenderer(
+                        new TableButtonRenderer(UITheme.DANGER)
+                );
+
+        orderTable.getColumn("Xóa")
+                .setCellEditor(
+                        new TableButtonEditor(
+                                "Xóa",
+                                UITheme.DANGER,
+                                this::onDeleteOrderRow
+                        )
+                );
 
         monModel = new DefaultTableModel(new Object[]{"ID", "Tên món", "Loại", "Giá", "Trạng thái"}, 0) {
             @Override
@@ -89,6 +104,7 @@ public class ChiTietBanDialog extends JDialog {
         loadLoai();
         loadOrders();
         loadMonList(null, null, null);
+        ScrollUtils.apply(this);
     }
 
     private JPanel buildLeft() {
@@ -110,10 +126,10 @@ public class ChiTietBanDialog extends JDialog {
         search.add(new JLabel("Loại:"));
         search.add(cbLoai);
 
-        search.add(new JLabel("Mon ID:"));
+        search.add(new JLabel("Món ID:"));
         search.add(txtMonId);
         JButton btnSearch = new JButton("Tìm");
-        JButton btnReset = new JButton("Reset");
+        JButton btnReset = new JButton("Tải lại");
         btnSearch.addActionListener(e -> onSearch());
         btnReset.addActionListener(e -> {
             txtKeyword.setText("");
@@ -187,7 +203,6 @@ public class ChiTietBanDialog extends JDialog {
 
     private void onSearch() {
         String keyword = txtKeyword.getText();
-
         Integer monId = null;
         try {
             String s = txtMonId.getText().trim();
@@ -195,13 +210,11 @@ public class ChiTietBanDialog extends JDialog {
                 monId = Integer.parseInt(s);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Mon ID không hợp lệ.");
+            JOptionPane.showMessageDialog(this, "Món ID không hợp lệ.");
             return;
         }
-
         LoaiMonAn selected = (LoaiMonAn) cbLoai.getSelectedItem();
         Integer loaiId = (selected != null && selected.getLoaiId() != 0) ? selected.getLoaiId() : null;
-
         loadMonList(keyword, loaiId, monId);
     }
 
@@ -232,7 +245,6 @@ public class ChiTietBanDialog extends JDialog {
     private void onEditOrderRow(int row) {
         int chiTietBanId = (Integer) orderModel.getValueAt(row, 0);
         int currentQty = Integer.parseInt(String.valueOf(orderModel.getValueAt(row, 2)));
-
         String s = JOptionPane.showInputDialog(this, "Nhập số lượng mới:", currentQty);
         if (s == null) {
             return;
@@ -268,4 +280,3 @@ public class ChiTietBanDialog extends JDialog {
         }
     }
 }
-

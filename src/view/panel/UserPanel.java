@@ -4,15 +4,17 @@ import controller.UserController;
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import model.User;
 import service.ServiceException;
 import util.Role;
+import util.RoundedButtonUI;
+import util.ScrollUtils;
+import util.UITheme;
 import view.dialog.UserFormDialog;
 
-/**
- * Quản lý nhân viên (Users) - chỉ ADMIN.
- */
 public class UserPanel extends JPanel {
     private final UserController controller = new UserController();
     private final DefaultTableModel tableModel;
@@ -28,14 +30,42 @@ public class UserPanel extends JPanel {
             }
         };
         table = new JTable(tableModel);
+        table.setRowHeight(32);
+        table.setFont(table.getFont().deriveFont(16f));
+        table.setBackground(UITheme.SAND);
+        table.setOpaque(true);
+        table.setForeground(Color.DARK_GRAY);
+        table.setSelectionBackground(UITheme.SAND.darker());
+        table.setSelectionForeground(Color.BLACK);
+        table.getTableHeader().setBackground(UITheme.COFFEE);
+        table.getTableHeader().setOpaque(true);
+        table.getTableHeader().setForeground(Color.DARK_GRAY);
+        table.getTableHeader().setFont(table.getTableHeader().getFont().deriveFont(Font.BOLD, 15f));
+        configureColumns();
 
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnRefresh = new JButton("Tải lại");
+
+        JButton btnRefresh = new JButton("Reset");
+        btnRefresh.setUI(new RoundedButtonUI());
+        btnRefresh.setBackground(UITheme.LATTE);
+        btnRefresh.setForeground(Color.WHITE);
+
         JButton btnAdd = new JButton("Thêm");
-        JButton btnEdit = new JButton("Chỉnh sửa");
+        btnAdd.setUI(new RoundedButtonUI());
+        btnAdd.setBackground(UITheme.CARAMEL);
+        btnAdd.setForeground(Color.WHITE);
+
+        JButton btnEdit = new JButton("Sửa");
+        btnEdit.setUI(new RoundedButtonUI());
+        btnEdit.setBackground(UITheme.CARAMEL);
+        btnEdit.setForeground(Color.WHITE);
+
         JButton btnDelete = new JButton("Xóa");
+        btnDelete.setUI(new RoundedButtonUI());
+        btnDelete.setBackground(UITheme.CARAMEL);
+        btnDelete.setForeground(Color.WHITE);
 
         btnRefresh.addActionListener(e -> loadData());
         btnAdd.addActionListener(e -> onAdd());
@@ -49,7 +79,24 @@ public class UserPanel extends JPanel {
 
         add(bottom, BorderLayout.SOUTH);
 
+        ScrollUtils.apply(this);
         loadData();
+    }
+
+    private void configureColumns() {
+        centerAndNarrow(table.getColumnModel().getColumn(0), 48);
+        table.getColumnModel().getColumn(1).setPreferredWidth(160);
+        table.getColumnModel().getColumn(2).setPreferredWidth(220);
+        table.getColumnModel().getColumn(3).setPreferredWidth(100);
+    }
+
+    private void centerAndNarrow(TableColumn column, int width) {
+        column.setPreferredWidth(width);
+        column.setMinWidth(Math.max(36, width - 8));
+        column.setMaxWidth(width + 8);
+        DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
+        renderer.setHorizontalAlignment(SwingConstants.CENTER);
+        column.setCellRenderer(renderer);
     }
 
     private void loadData() {
@@ -129,4 +176,3 @@ public class UserPanel extends JPanel {
         }
     }
 }
-

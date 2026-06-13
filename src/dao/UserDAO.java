@@ -1,17 +1,20 @@
 package dao;
 
-import model.User;
-import util.DBConnection;
-import util.Role;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import model.User;
+import util.DBConnection;
+import util.Role;
 
-public class UserDAO {
+public class UserDAO extends BaseDAO<User> {
+
+    public UserDAO(){
+        super("User");
+    }
 
     public User findByUsernameAndPassword(String username, String password) {
         // Schema Users không được cung cấp trong đề, nên chỉ dùng các cột phổ biến.
@@ -58,6 +61,29 @@ public class UserDAO {
         return list;
     }
 
+    public User findById(int userId) {
+        String sql = "SELECT user_id, username, password, role, fullname FROM Users WHERE user_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("user_id"));
+                    u.setUsername(rs.getString("username"));
+                    u.setPassword(rs.getString("password"));
+                    u.setRole(Role.fromDb(rs.getString("role")));
+                    u.setFullName(rs.getString("fullname"));
+                    return u;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
     public int insert(User user) throws Exception {
         String sql = "INSERT INTO Users(username, password, role, fullname) VALUES (?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -76,6 +102,7 @@ public class UserDAO {
         throw new Exception("Không lấy được user_id sau khi insert Users.");
     }
 
+    @Override
     public void update(User user) throws Exception {
         String sql = "UPDATE Users SET username = ?, password = ?, role = ?, fullname = ? WHERE user_id = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -89,6 +116,7 @@ public class UserDAO {
         }
     }
 
+    @Override
     public void delete(int userId) throws Exception {
         String sql = "DELETE FROM Users WHERE user_id = ?";
         try (Connection conn = DBConnection.getConnection();

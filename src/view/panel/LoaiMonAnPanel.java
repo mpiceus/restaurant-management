@@ -10,6 +10,9 @@ import javax.swing.*;
 import model.LoaiMonAn;
 import service.ServiceException;
 import util.ImageUtils;
+import util.RoundedButtonUI;
+import util.RoundedPanel;
+import util.ScrollUtils;
 import util.UITheme;
 import view.common.WrapLayout;
 import view.dialog.LoaiMonAnFormDialog;
@@ -36,6 +39,7 @@ public class LoaiMonAnPanel extends JPanel {
 
         add(buildBottom(), BorderLayout.SOUTH);
 
+        ScrollUtils.apply(this);
         loadData();
     }
 
@@ -43,14 +47,27 @@ public class LoaiMonAnPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
         p.setBackground(UITheme.BEIGE);
 
-        JButton btnRefresh = new JButton("Lam moi");
+        JButton btnRefresh = new JButton("Reset");
+        btnRefresh.setUI(new RoundedButtonUI());
+        btnRefresh.setBackground(UITheme.LATTE);
+        btnRefresh.setForeground(Color.WHITE);
+
         btnRefresh.addActionListener(e -> loadData());
         p.add(btnRefresh);
 
         if (editable) {
-            JButton btnAdd = new JButton("Them");
-            JButton btnEdit = new JButton("Sua");
-            JButton btnDelete = new JButton("Xoa");
+            JButton btnAdd = new JButton("Thêm");
+            btnAdd.setUI(new RoundedButtonUI());
+            btnAdd.setBackground(UITheme.CARAMEL);
+            btnAdd.setForeground(Color.WHITE);
+            JButton btnEdit = new JButton("Sửa");
+            btnEdit.setUI(new RoundedButtonUI());
+            btnEdit.setBackground(UITheme.CARAMEL);
+            btnEdit.setForeground(Color.WHITE);
+            JButton btnDelete = new JButton("Xóa");
+            btnDelete.setUI(new RoundedButtonUI());
+            btnDelete.setBackground(UITheme.CARAMEL);
+            btnDelete.setForeground(Color.WHITE);
 
             btnAdd.addActionListener(e -> onAdd());
             btnEdit.addActionListener(e -> onEdit());
@@ -80,10 +97,10 @@ public class LoaiMonAnPanel extends JPanel {
     }
 
     private JPanel buildLoaiCard(LoaiMonAn l) {
-        JPanel card = new JPanel();
+        RoundedPanel card = new RoundedPanel(18);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(BorderFactory.createLineBorder(UITheme.BORDER, 1, true));
-        card.setBackground(UITheme.BEIGE);
+        card.setBorder(null);
+        card.setBackground(UITheme.SAND);
         card.setPreferredSize(new Dimension(210, 240));
         card.putClientProperty("loaiId", l.getLoaiId());
 
@@ -108,7 +125,7 @@ public class LoaiMonAnPanel extends JPanel {
         }
         img.add(imgLabel, BorderLayout.CENTER);
 
-        JLabel hint = new JLabel("Click de xem mon");
+        JLabel hint = new JLabel("Click để xem món");
         hint.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
         hint.setAlignmentX(Component.CENTER_ALIGNMENT);
         hint.setHorizontalAlignment(SwingConstants.CENTER);

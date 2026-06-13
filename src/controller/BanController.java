@@ -1,10 +1,9 @@
 package controller;
 
+import java.util.List;
 import model.Ban;
 import service.BanService;
 import service.ServiceException;
-
-import java.util.List;
 
 public class BanController {
     private final BanService banService = new BanService();
