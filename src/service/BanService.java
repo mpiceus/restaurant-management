@@ -1,9 +1,8 @@
 package service;
 
 import dao.BanDAO;
-import model.Ban;
-
 import java.util.List;
+import model.Ban;
 
 public class BanService {
     private final BanDAO banDAO = new BanDAO();
@@ -18,23 +17,23 @@ public class BanService {
 
     public void create(String tenBan, String trangThai) throws ServiceException {
         if (tenBan == null || tenBan.trim().isEmpty()) {
-            throw new ServiceException("TÃªn bÃ n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+            throw new ServiceException("Tên bàn không được phép để trống");
         }
         try {
             banDAO.insert(new Ban(0, tenBan.trim(), trangThai));
         } catch (Exception e) {
-            throw new ServiceException("KhÃ´ng thá»ƒ thÃªm bÃ n.", e);
+            throw new ServiceException("Không thể thêm bàn.", e);
         }
     }
 
     public void update(int banId, String tenBan, String trangThai) throws ServiceException {
         if (tenBan == null || tenBan.trim().isEmpty()) {
-            throw new ServiceException("TÃªn bÃ n khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.");
+            throw new ServiceException("Tên bàn không được phép để trống");
         }
         try {
             banDAO.update(new Ban(banId, tenBan.trim(), trangThai));
         } catch (Exception e) {
-            throw new ServiceException("KhÃ´ng thá»ƒ cáº­p nháº­t bÃ n.", e);
+            throw new ServiceException("Không thể sửa bàn.", e);
         }
     }
 
@@ -42,7 +41,7 @@ public class BanService {
         try {
             banDAO.updateTrangThai(banId, trangThai);
         } catch (Exception e) {
-            throw new ServiceException("KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i bÃ n.", e);
+            throw new ServiceException("Không thể cập nhật trạng thái bàn.", e);
         }
     }
 
@@ -50,7 +49,7 @@ public class BanService {
         try {
             banDAO.delete(banId);
         } catch (Exception e) {
-            throw new ServiceException("KhÃ´ng thá»ƒ xÃ³a bÃ n (cÃ³ thá»ƒ Ä‘ang Ä‘Æ°á»£c tham chiáº¿u bá»Ÿi hÃ³a Ä‘Æ¡n).", e);
+            throw new ServiceException("Không thể xóa bàn do đang được tham chiếu từ bảng khác", e);
         }
     }
 }

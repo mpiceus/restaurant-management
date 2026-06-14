@@ -47,7 +47,10 @@ public class BanPanel extends JPanel {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
         p.setBackground(UITheme.BEIGE);
 
-        JButton btnRefresh = new JButton("Tải lại");
+        JButton btnRefresh = new JButton("Reset");
+        btnRefresh.setUI(new RoundedButtonUI());
+        btnRefresh.setBackground(UITheme.LATTE);
+        btnRefresh.setForeground(Color.WHITE);
         btnRefresh.addActionListener(e -> loadData());
         p.add(btnRefresh);
 

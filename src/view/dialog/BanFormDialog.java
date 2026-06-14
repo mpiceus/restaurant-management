@@ -1,7 +1,9 @@
 package view.dialog;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
+import util.RoundedButtonUI;
+import util.UITheme;
 
 public class BanFormDialog extends JDialog {
     public static class InitialData {
@@ -43,11 +45,17 @@ public class BanFormDialog extends JDialog {
         form.add(new JLabel("Tên bàn:"));
         form.add(txtTenBan);
 
-        form.add(new JLabel("Trạng thái:"));
-        form.add(cbTrangThai);
+        //form.add(new JLabel("Trạng thái:"));
+        //form.add(cbTrangThai);
 
         JButton btnCancel = new JButton("Hủy");
+        btnCancel.setUI(new RoundedButtonUI());
+        btnCancel.setBackground(UITheme.LATTE);
+        btnCancel.setForeground(Color.WHITE);
         JButton btnSave = new JButton("Lưu");
+        btnSave.setUI(new RoundedButtonUI());
+        btnSave.setBackground(UITheme.CARAMEL);
+        btnSave.setForeground(Color.WHITE);
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> onSave());
 
