@@ -101,7 +101,7 @@ public class LoaiMonAnPanel extends JPanel {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBorder(null);
         card.setBackground(UITheme.SAND);
-        card.setPreferredSize(new Dimension(210, 240));
+        card.setPreferredSize(new Dimension(200, 140));
         card.putClientProperty("loaiId", l.getLoaiId());
 
         JLabel title = new JLabel(String.valueOf(l.getTenLoai()).toUpperCase());
@@ -109,11 +109,11 @@ public class LoaiMonAnPanel extends JPanel {
         title.setBorder(BorderFactory.createEmptyBorder(10, 10, 6, 10));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel img = new JPanel(new BorderLayout());
+        /*JPanel img = new JPanel(new BorderLayout());
         img.setPreferredSize(new Dimension(160, 160));
         img.setMaximumSize(new Dimension(160, 160));
         img.setAlignmentX(Component.CENTER_ALIGNMENT);
-        img.setBackground(Color.WHITE);
+        img.setBackground(UITheme.LATTE);
         img.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
         JLabel imgLabel = new JLabel("", SwingConstants.CENTER);
@@ -123,7 +123,7 @@ public class LoaiMonAnPanel extends JPanel {
         } else {
             imgLabel.setText(l.getTenLoai());
         }
-        img.add(imgLabel, BorderLayout.CENTER);
+        img.add(imgLabel, BorderLayout.CENTER);*/
 
         JLabel hint = new JLabel("Click để xem món");
         hint.setBorder(BorderFactory.createEmptyBorder(8, 10, 10, 10));
@@ -131,7 +131,7 @@ public class LoaiMonAnPanel extends JPanel {
         hint.setHorizontalAlignment(SwingConstants.CENTER);
 
         card.add(title);
-        card.add(img);
+        //card.add(img);
         card.add(hint);
 
         card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -158,7 +158,7 @@ public class LoaiMonAnPanel extends JPanel {
                 if (selectedLoaiId != null && selectedLoaiId.equals(l.getLoaiId())) {
                     return;
                 }
-                card.setBackground(UITheme.BEIGE);
+                card.setBackground(UITheme.SAND);
             }
         });
 
@@ -173,7 +173,7 @@ public class LoaiMonAnPanel extends JPanel {
             JPanel card = (JPanel) c;
             Object id = card.getClientProperty("loaiId");
             boolean isSelected = id instanceof Integer && id.equals(selectedLoaiId);
-            card.setBackground(isSelected ? new Color(0xE2D6C0) : UITheme.BEIGE);
+            card.setBackground(isSelected ? new Color(0xE2D6C0) : UITheme.SAND);
         }
     }
 

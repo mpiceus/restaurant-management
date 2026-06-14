@@ -308,7 +308,7 @@ public class OrderDialog extends JDialog {
         btnThanhToan.setForeground(Color.WHITE);
         btnThanhToan.addActionListener(e -> onThanhToan());
         btnThanhToan.setFocusPainted(false);
-        btnThanhToan.setPreferredSize(new Dimension(50, 20));
+        btnThanhToan.setPreferredSize(new Dimension(150, 20));
         btnThanhToan.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnThanhToan.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         bottom.add(btnThanhToan, BorderLayout.EAST);
@@ -706,7 +706,7 @@ public class OrderDialog extends JDialog {
         private Runnable onExportPdf;
 
         private final JTextArea summary = new JTextArea();
-        private final JButton btnHoanThanh = new JButton("Hoan thanh");
+        private final JButton btnHoanThanh = new JButton("Hoàn thành");
         private final JButton btnExportPdf = new JButton("Xuất PDF");
 
         public CheckoutSummaryPanel() {
@@ -724,6 +724,14 @@ public class OrderDialog extends JDialog {
             centerWrap.add(summary);
 
             add(centerWrap, BorderLayout.CENTER);
+
+            btnHoanThanh.setUI(new RoundedButtonUI());
+            btnHoanThanh.setBackground(UITheme.LATTE);
+            btnHoanThanh.setForeground(Color.WHITE);
+
+            btnExportPdf.setUI(new RoundedButtonUI());
+            btnExportPdf.setBackground(UITheme.CARAMEL);
+            btnExportPdf.setForeground(Color.WHITE);
 
             btnHoanThanh.addActionListener(e -> {
                 if (onHoanThanh != null) {

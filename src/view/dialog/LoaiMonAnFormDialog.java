@@ -1,7 +1,9 @@
 package view.dialog;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
+import util.RoundedButtonUI;
+import util.UITheme;
 
 public class LoaiMonAnFormDialog extends JDialog {
     private boolean saved = false;
@@ -28,7 +30,13 @@ public class LoaiMonAnFormDialog extends JDialog {
         form.add(txtTenLoai);
 
         JButton btnCancel = new JButton("Hủy");
+        btnCancel.setUI(new RoundedButtonUI());
+        btnCancel.setBackground(UITheme.LATTE);
+        btnCancel.setForeground(Color.WHITE);
         JButton btnSave = new JButton("Lưu");
+        btnSave.setUI(new RoundedButtonUI());
+        btnSave.setBackground(UITheme.CARAMEL);
+        btnSave.setForeground(Color.WHITE);
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> onSave());
 
